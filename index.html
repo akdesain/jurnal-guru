@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartSchedule - Asisten Jadwal Guru</title>
+    <title>Jurnal & Jadwal Guru Profesional</title>
     <style>
         :root {
             --primary: #0284c7;
@@ -29,7 +29,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 32px 16px;
+            padding: 20px 16px 90px 16px;
             display: flex;
             justify-content: center;
         }
@@ -39,7 +39,7 @@
             max-width: 900px;
         }
 
-        /* Header Guru Friendly */
+        /* Header / Greeting */
         header {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -53,7 +53,7 @@
         }
 
         .brand h1 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin-bottom: 4px;
         }
@@ -63,44 +63,55 @@
             opacity: 0.9;
         }
 
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 6px;
-            border-radius: 10px;
-        }
-
-        .tab-btn {
-            padding: 8px 18px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #ffffff;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: #ffffff;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
         }
 
-        /* Kartu Konten Utama */
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item span.icon {
+            font-size: 1.2rem;
+        }
+
+        /* Cards */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 28px;
-            margin-bottom: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 600;
             color: var(--text-main);
             margin-bottom: 16px;
@@ -109,163 +120,67 @@
             gap: 10px;
         }
 
-        .instruction-text {
-            font-size: 0.92rem;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-            line-height: 1.5;
+        /* Dashboard Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
         }
 
-        /* Smart Input Box */
-        .smart-input-wrapper {
-            position: relative;
-        }
-
-        .smart-input {
-            width: 100%;
-            padding: 16px 20px;
-            font-size: 1.05rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            outline: none;
-            transition: all 0.2s;
-            background: #fafaf9;
-        }
-
-        .smart-input:focus {
-            border-color: var(--primary);
-            background: #ffffff;
-            box-shadow: 0 0 0 4px var(--primary-light);
-        }
-
-        /* Quick Pills / Tombol Cepat */
-        .quick-pills {
+        .welcome-banner .date-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 16px;
         }
 
-        .pill-label {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            font-weight: 600;
+        .date-display h3 {
+            font-size: 0.95rem;
+            opacity: 0.9;
         }
 
-        .quick-pill {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.82rem;
-            cursor: pointer;
-            color: var(--text-main);
-            transition: all 0.15s;
+        .date-display h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
-        .quick-pill:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            color: var(--primary);
+        .time-box {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        /* Preview Chips Realtime */
-        .preview-chips {
+        .date-picker-wrapper {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 16px;
-            min-height: 36px;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 14px;
+            border-radius: 8px;
         }
 
-        .chip {
-            padding: 6px 14px;
-            border-radius: 20px;
+        .date-picker-wrapper label {
             font-size: 0.85rem;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .chip-active {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-
-        .chip-default {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid var(--border);
-        }
-
-        /* Form Pengaturan */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media(max-width: 650px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            background: #fff;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        /* Tombol Aksi */
-        .btn-primary {
-            background: var(--primary);
-            color: #ffffff;
-            padding: 12px 24px;
+        .date-picker-wrapper input {
+            background: transparent;
             border: none;
-            border-radius: 8px;
+            color: white;
             font-weight: 600;
-            font-size: 0.95rem;
+            outline: none;
             cursor: pointer;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        }
+        .date-picker-wrapper input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .action-bar {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        /* List Jadwal Guru */
+        /* Schedule List Items */
         .schedule-list {
             list-style: none;
             display: flex;
@@ -273,380 +188,1078 @@
             gap: 12px;
         }
 
-        .schedule-item {
+        .schedule-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: #ffffff;
-            transition: box-shadow 0.2s;
+            transition: all 0.2s;
         }
 
-        .schedule-item:hover {
+        .schedule-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: var(--primary);
         }
 
         .schedule-info h4 {
             font-size: 1.05rem;
             font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+        }
+
+        .badge-room {
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-left: 6px;
         }
 
         .schedule-meta {
             display: flex;
-            flex-wrap: wrap;
             gap: 12px;
             font-size: 0.85rem;
             color: var(--text-muted);
+            margin-top: 6px;
         }
 
-        .btn-delete {
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-success {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .btn-outline {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .btn-outline:hover { background: #f8fafc; border-color: var(--primary); color: var(--primary); }
+
+        .btn-danger {
             background: #fee2e2;
             color: #dc2626;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
+        }
+        .btn-danger:hover { background: #fca5a5; }
+
+        /* Form Controls */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media(max-width: 650px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
             font-weight: 600;
-            transition: background 0.15s;
+            margin-bottom: 6px;
         }
 
-        .btn-delete:hover {
-            background: #fca5a5;
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: #fff;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
-        /* Tab Switcher Display Control */
+        /* Tab Displays */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Sandbox Box */
-        .sandbox-box {
-            background: #0f172a;
-            color: #38bdf8;
+        /* Modal / Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
             padding: 16px;
-            border-radius: 8px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
-            margin-top: 14px;
-            white-space: pre-wrap;
-            overflow-x: auto;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            border-radius: var(--radius);
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-close {
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);
+        }
+
+        /* Photo Upload preview */
+        .photo-preview-box {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            background: #fafaf9;
+            cursor: pointer;
+        }
+        .photo-preview-box img {
+            max-height: 120px;
+            margin-top: 8px;
+            border-radius: 6px;
+        }
+
+        /* Lock Screen */
+        .lock-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f172a;
+            color: white;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.3s;
+        }
+        .lock-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .pin-dots {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .pin-dot {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .pin-dot.filled {
+            background: #38bdf8;
+        }
+        .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            gap: 12px;
+        }
+        .pin-key {
+            height: 50px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .pin-key:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
+<!-- KUNCI / SECURITY LOCK SCREEN -->
+<div id="lockScreen" class="lock-screen hidden">
+    <h2>🔒 Aplikasi Terkunci</h2>
+    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">Masukkan 4-digit PIN keamanan Anda</p>
+    <div class="pin-dots">
+        <div class="pin-dot" id="dot1"></div>
+        <div class="pin-dot" id="dot2"></div>
+        <div class="pin-dot" id="dot3"></div>
+        <div class="pin-dot" id="dot4"></div>
+    </div>
+    <div class="pin-keypad">
+        <button class="pin-key" onclick="pressPin('1')">1</button>
+        <button class="pin-key" onclick="pressPin('2')">2</button>
+        <button class="pin-key" onclick="pressPin('3')">3</button>
+        <button class="pin-key" onclick="pressPin('4')">4</button>
+        <button class="pin-key" onclick="pressPin('5')">5</button>
+        <button class="pin-key" onclick="pressPin('6')">6</button>
+        <button class="pin-key" onclick="pressPin('7')">7</button>
+        <button class="pin-key" onclick="pressPin('8')">8</button>
+        <button class="pin-key" onclick="pressPin('9')">9</button>
+        <button class="pin-key" onclick="pressPin('C')">C</button>
+        <button class="pin-key" onclick="pressPin('0')">0</button>
+        <button class="pin-key" onclick="pressPin('OK')">✓</button>
+    </div>
+</div>
+
 <div class="app-container">
-    <!-- Header Nyaman untuk Guru -->
+    <!-- Header -->
     <header>
         <div class="brand">
-            <h1>👨‍🏫 SmartSchedule Guru</h1>
-            <p>Atur jadwal mengajar dan agenda sekolah dengan ketikan bebas.</p>
+            <h1 id="headerName">👨‍🏫 Aan Kurniawan, S.Pd.,M.Ars</h1>
+            <p>Jurnal & Jadwal Mengajar Profesional</p>
         </div>
-        <div class="nav-tabs">
-            <button id="btnTabJadwal" class="tab-btn active" onclick="switchTab('jadwal')">Jadwal Saya</button>
-            <button id="btnTabPengaturan" class="tab-btn" onclick="switchTab('pengaturan')">⚙️ Pengaturan</button>
-        </div>
+        <button class="btn btn-outline" style="background:rgba(255,255,255,0.2); border:none; color:white;" onclick="switchTab('pengaturan')">⚙️ Pengaturan</button>
     </header>
 
-    <!-- ================= TAB 1: JADWAL UTAMA ================= -->
-    <section id="tab-jadwal" class="tab-content active">
-        <div class="card">
-            <h2 class="card-title">✨ Tambah Agenda / Mengajar</h2>
-            <p class="instruction-text">
-                Ketik langsung apa yang ingin dijadwalkan secara natural. Sistem akan otomatis mendeteksi tanggal dan waktunya.
-            </p>
-            
-            <div class="smart-input-wrapper">
-                <input type="text" id="mainInput" class="smart-input" placeholder="Contoh: 'Rapat guru besok jam 9 pagi' atau 'Mengajar Matematika kelas 10 lusa'..." oninput="handleInput(this.value, 'main')">
+    <!-- ================= TAB 1: BERANDA ================= -->
+    <section id="tab-beranda" class="tab-content active">
+        <div class="welcome-banner">
+            <div class="date-row">
+                <div class="date-display">
+                    <h3 id="dayName">Hari Ini (Kamis)</h3>
+                    <h2 id="dateString">30 Juli 2026</h2>
+                </div>
+                <div class="time-box" id="liveClock">14.42</div>
             </div>
-
-            <!-- Bantuan Tombol Cepat (Pills) -->
-            <div class="quick-pills">
-                <span class="pill-label">Pintasan cepat:</span>
-                <button class="quick-pill" onclick="appendQuickText('Hari ini ')">📅 Hari Ini</button>
-                <button class="quick-pill" onclick="appendQuickText('Besok ')">📅 Besok</button>
-                <button class="quick-pill" onclick="appendQuickText('jam 07:30 ')">⏰ Jam 07:30</button>
-                <button class="quick-pill" onclick="appendQuickText('jam 10 pagi ')">⏰ Jam 10 Pagi</button>
-            </div>
-            
-            <!-- Realtime Pratinjau Chips -->
-            <div id="mainChips" class="preview-chips"></div>
-
-            <div class="action-bar">
-                <button class="btn-primary" onclick="addSchedule()">
-                    <span>Simpan ke Jadwal</span> 📥
-                </button>
+            <div class="date-picker-wrapper">
+                <label for="journalDateFilter">📅 Pilih Tanggal Jurnal:</label>
+                <input type="date" id="journalDateFilter" onchange="filterScheduleByDate(this.value)">
             </div>
         </div>
 
         <div class="card">
-            <h2 class="card-title">📚 Daftar Agenda & Jadwal Guru</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 class="card-title" style="margin-bottom:0;">Jadwal Mengajar</h2>
+                <button class="btn btn-primary" onclick="openAddScheduleModal()">+ Tambah Jadwal</button>
+            </div>
             <ul id="scheduleList" class="schedule-list">
-                <!-- Dirender dinamis -->
+                <!-- Render dinamis -->
             </ul>
         </div>
     </section>
 
-    <!-- ================= TAB 2: PENGATURAN SYSTEM ================= -->
-    <section id="tab-pengaturan" class="tab-content">
+    <!-- ================= TAB 2: LAPORAN (PDF EXPORT) ================= -->
+    <section id="tab-laporan" class="tab-content">
         <div class="card">
-            <h2 class="card-title">⚙️ Konfigurasi Standar Jadwal</h2>
-            <p class="instruction-text">
-                Tentukan nilai bawaan (*default*) yang akan digunakan otomatis oleh sistem jika Anda mengetik jadwal singkat tanpa menyertakan jam atau durasi tertentu.
+            <h2 class="card-title">📊 Cetak Rekap Jurnal PBM (Weekly / Monthly)</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                Buat laporan rekapitulasi pelaksanaan pembelajaran lengkap dengan kehadiran siswa, kondisi PBM, tanda tangan guru dari pengaturan, serta foto dokumentasi jurnal.
             </p>
 
-            <form id="settingsForm" onsubmit="saveSettings(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Periode Laporan:</label>
+                    <select id="reportPeriod" class="form-control">
+                        <option value="weekly">Mingguan (Weekly)</option>
+                        <option value="monthly">Bulanan (Monthly)</option>
+                        <option value="all">Semua Jurnal Tersimpan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Format Output:</label>
+                    <select id="reportFormat" class="form-control">
+                        <option value="pdf">Dokumen PDF Profesional</option>
+                        <option value="csv">File CSV Excel</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button class="btn btn-primary" onclick="generateReport()">📥 Unduh Rekap Laporan</button>
+                <button class="btn btn-outline" onclick="previewReport()">👁️ Pratinjau Cetak</button>
+            </div>
+        </div>
+
+        <div class="card" id="previewCard" style="display:none;">
+            <h2 class="card-title">Pratinjau Rekap PBM</h2>
+            <div id="previewContainer" style="overflow-x: auto; background: #fff; border: 1px solid var(--border); padding: 16px; border-radius: 8px;">
+                <!-- HTML Preview Table -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= TAB 3: PENGATURAN ================= -->
+    <section id="tab-pengaturan" class="tab-content">
+        <div class="card">
+            <h2 class="card-title">⚙️ Profil Guru & Tanda Tangan</h2>
+            <form id="profileForm" onsubmit="saveProfile(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="defaultTime">Jam Default (Jika tidak diketik):</label>
-                        <input type="time" id="defaultTime" class="form-control" value="07:30">
+                        <label>Nama Lengkap & Gelar:</label>
+                        <input type="text" id="profName" class="form-control" value="Aan Kurniawan, S.Pd.,M.Ars">
                     </div>
-
                     <div class="form-group">
-                        <label for="defaultDuration">Durasi Default Pelajaran/Acara:</label>
-                        <select id="defaultDuration" class="form-control">
-                            <option value="30">30 Menit</option>
-                            <option value="45" selected>45 Menit (1 Jam Pelajaran)</option>
-                            <option value="60">60 Menit (1 Jam Penuh)</option>
-                            <option value="90">90 Menit</option>
-                        </select>
+                        <label>Nomor Induk Pegawai (NIP):</label>
+                        <input type="text" id="profNip" class="form-control" value="12321312">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nama Sekolah / Instansi:</label>
+                        <input type="text" id="profSchool" class="form-control" value="SMK Negeri 1">
+                    </div>
+                    <div class="form-group">
+                        <label>Jabatan / Mata Pelajaran:</label>
+                        <input type="text" id="profSubject" class="form-control" value="Koding & Kecerdasan Artifisial">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="defaultReminder">Pengingat Otomatis (Notifikasi):</label>
-                    <select id="defaultReminder" class="form-control">
-                        <option value="10" selected>10 Menit Sebelum</option>
-                        <option value="30">30 Menit Sebelum</option>
-                        <option value="60">1 Jam Sebelum</option>
-                        <option value="0">Tanpa Pengingat</option>
-                    </select>
+                    <label>Tanda Tangan Digital (Upload Gambar / TTD):</label>
+                    <div class="photo-preview-box" onclick="document.getElementById('sigInput').click()">
+                        <span id="sigPlaceholder">Klik untuk unggah gambar Tanda Tangan (PNG/JPG)</span>
+                        <img id="sigPreviewImg" style="display:none;" />
+                    </div>
+                    <input type="file" id="sigInput" accept="image/*" style="display:none;" onchange="handleSigUpload(this)">
                 </div>
 
-                <div class="action-bar">
-                    <button type="submit" class="btn-primary">Simpan Pengaturan</button>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary">Simpan Profil & TTD</button>
                 </div>
             </form>
         </div>
 
-        <!-- LIVE SANDBOX UJI COBA -->
-        <div class="card" style="border-color: #38bdf8;">
-            <h2 class="card-title">🧪 Uji Coba Kalimat (Sandbox Setting)</h2>
-            <p class="instruction-text">
-                Uji langsung efektivitas pengaturan di atas dengan mengetik kalimat di bawah ini:
-            </p>
-
-            <div class="smart-input-wrapper">
-                <input type="text" id="sandboxInput" class="smart-input" placeholder="Ketik uji coba: 'Upacara bendera senin depan'..." oninput="handleInput(this.value, 'sandbox')">
+        <!-- KEAMANAN & KUNCI -->
+        <div class="card">
+            <h2 class="card-title">🔒 Keamanan & PIN Aplikasi</h2>
+            <div class="form-group">
+                <label>Aktifkan Kunci PIN Aplikasi:</label>
+                <select id="pinEnabled" class="form-control" onchange="togglePinSetting(this.value)">
+                    <option value="no">Nonaktif</option>
+                    <option value="yes">Aktifkan Kunci PIN (4 Digit)</option>
+                </select>
             </div>
+            <div class="form-group" id="pinGroup" style="display:none;">
+                <label>Ubah PIN (4 Digit Angka):</label>
+                <input type="password" id="newPin" class="form-control" maxlength="4" placeholder="Contoh: 1234">
+                <button class="btn btn-primary" style="margin-top: 10px;" onclick="savePin()">Simpan PIN Baru</button>
+            </div>
+        </div>
 
-            <div id="sandboxChips" class="preview-chips"></div>
-            <div id="sandboxJson" class="sandbox-box">// Hasil ekstraksi objek JSON sistem akan tampil di sini...</div>
+        <!-- MANAJEMEN DATA & RIWAYAT (EDIT / HAPUS) -->
+        <div class="card">
+            <h2 class="card-title">🗂️ Manajemen & Riwayat Jurnal Keseluruhan</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
+                Kelola, edit, atau hapus riwayat jadwal dan jurnal yang telah diinput sebelumnya.
+            </p>
+            <div id="managementList" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Dirender dinamis -->
+            </div>
         </div>
     </section>
 </div>
 
-<script>
-    /* ================= 1. STATE & STORAGE MANAGEMENT ================= */
-    let config = {
-        defaultTime: '07:30',
-        defaultDuration: '45',
-        defaultReminder: '10'
-    };
+<!-- BOTTOM NAVIGATION BAR -->
+<nav class="bottom-nav">
+    <button class="nav-item active" id="navBeranda" onclick="switchTab('beranda')">
+        <span class="icon">🏠</span>
+        <span>Beranda</span>
+    </button>
+    <button class="nav-item" id="navLaporan" onclick="switchTab('laporan')">
+        <span class="icon">📈</span>
+        <span>Laporan</span>
+    </button>
+    <button class="nav-item" id="navPengaturan" onclick="switchTab('pengaturan')">
+        <span class="icon">⚙️</span>
+        <span>Pengaturan</span>
+    </button>
+</nav>
 
-    let schedules = [];
+<!-- MODAL: ISI JURNAL -->
+<div id="journalModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modalJournalTitle">Isi Jurnal PBM</h3>
+            <button class="modal-close" onclick="closeModal('journalModal')">✕</button>
+        </div>
+        <form id="journalForm" onsubmit="saveJournalEntry(event)">
+            <input type="hidden" id="jScheduleIndex">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Kelas:</label>
+                    <input type="text" id="jClass" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Mata Pelajaran / Topik:</label>
+                    <input type="text" id="jSubject" class="form-control" readonly>
+                </div>
+            </div>
 
-    function initApp() {
-        const savedConfig = localStorage.getItem('smart_guru_config');
-        if (savedConfig) {
-            config = JSON.parse(savedConfig);
-            document.getElementById('defaultTime').value = config.defaultTime;
-            document.getElementById('defaultDuration').value = config.defaultDuration;
-            document.getElementById('defaultReminder').value = config.defaultReminder;
-        }
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Jumlah Siswa:</label>
+                    <input type="number" id="jTotalStudents" class="form-control" value="30" oninput="calcAttendance()">
+                </div>
+                <div class="form-group">
+                    <label>Kondisi PBM:</label>
+                    <select id="jCondition" class="form-control">
+                        <option value="Kondusif">Kondusif</option>
+                        <option value="Sangat Baik">Sangat Baik</option>
+                        <option value="Kurang Kondusif">Kurang Kondusif</option>
+                    </select>
+                </div>
+            </div>
 
-        const savedSchedules = localStorage.getItem('smart_guru_events');
-        if (savedSchedules) {
-            schedules = JSON.parse(savedSchedules);
-            renderSchedules();
-        }
-    }
-
-    function saveSettings(e) {
-        e.preventDefault();
-        config.defaultTime = document.getElementById('defaultTime').value;
-        config.defaultDuration = document.getElementById('defaultDuration').value;
-        config.defaultReminder = document.getElementById('defaultReminder').value;
-
-        localStorage.setItem('smart_guru_config', JSON.stringify(config));
-        alert('✨ Pengaturan berhasil disimpan dan disesuaikan!');
-        
-        const sandboxVal = document.getElementById('sandboxInput').value;
-        if (sandboxVal) handleInput(sandboxVal, 'sandbox');
-    }
-
-    /* ================= 2. PARSER BAHASA ALAMI (NLP) ================= */
-    function parseNaturalLanguage(text) {
-        if (!text || text.trim() === '') return null;
-
-        let workingText = text.toLowerCase();
-        let eventDate = new Date();
-        let isDateDetected = false;
-        let isTimeDetected = false;
-
-        // Deteksi Hari/Tanggal Sederhana
-        if (workingText.includes('besok lusa') || workingText.includes('lusa')) {
-            eventDate.setDate(eventDate.getDate() + 2);
-            workingText = workingText.replace(/besok lusa|lusa/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('besok')) {
-            eventDate.setDate(eventDate.getDate() + 1);
-            workingText = workingText.replace(/besok/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('hari ini')) {
-            workingText = workingText.replace(/hari ini/gi, '');
-            isDateDetected = true;
-        }
-
-        // Deteksi Jam / Waktu
-        let hours = parseInt(config.defaultTime.split(':')[0]);
-        let minutes = parseInt(config.defaultTime.split(':')[1]);
-
-        const timeRegex = /(?:jam|pukul)\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|siang|sore|malam)?/i;
-        const match = workingText.match(timeRegex);
-
-        if (match) {
-            isTimeDetected = true;
-            let h = parseInt(match[1]);
-            let m = match[2] ? parseInt(match[2]) : 0;
-            const period = match[3] ? match[3].toLowerCase() : '';
-
-            if ((period === 'siang' || period === 'sore' || period === 'malam') && h < 12) {
-                h += 12;
-            } else if (period === 'pagi' && h === 12) {
-                h = 0;
-            }
-
-            hours = h;
-            minutes = m;
-            workingText = workingText.replace(match[0], '');
-        }
-
-        let title = workingText.replace(/\s+/g, ' ').trim();
-        if (!title) title = "Agenda Mengajar";
-        title = title.charAt(0).toUpperCase() + title.slice(1);
-
-        const formattedDate = eventDate.toISOString().split('T')[0];
-        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-
-        return {
-            title: title,
-            date: formattedDate,
-            time: formattedTime,
-            duration: config.defaultDuration + ' Menit',
-            reminder: config.defaultReminder == '0' ? 'Tanpa Pengingat' : config.defaultReminder + ' Menit Sebelumnya',
-            meta: { isDateDetected, isTimeDetected }
-        };
-    }
-
-    /* ================= 3. UI RENDERING & HANDLERS ================= */
-    function handleInput(text, context) {
-        const parsed = parseNaturalLanguage(text);
-        const chipsContainer = document.getElementById(context === 'main' ? 'mainChips' : 'sandboxChips');
-        
-        if (!parsed) {
-            chipsContainer.innerHTML = '';
-            if (context === 'sandbox') {
-                document.getElementById('sandboxJson').innerText = '// Objek JSON hasil pembacaan kalimat akan tampil di sini...';
-            }
-            return;
-        }
-
-        chipsContainer.innerHTML = `
-            <span class="chip chip-active">📌 ${parsed.title}</span>
-            <span class="chip ${parsed.meta.isDateDetected ? 'chip-active' : 'chip-default'}">
-                📅 ${parsed.date} ${parsed.meta.isDateDetected ? '(Terdeteksi)' : '(Default)'}
-            </span>
-            <span class="chip ${parsed.meta.isTimeDetected ? 'chip-active' : 'chip-default'}">
-                ⏰ ${parsed.time} ${parsed.meta.isTimeDetected ? '(Terdeteksi)' : '(Setting Default)'}
-            </span>
-            <span class="chip chip-default">⏳ ${parsed.duration}</span>
-            <span class="chip chip-default">🔔 ${parsed.reminder}</span>
-        `;
-
-        if (context === 'sandbox') {
-            document.getElementById('sandboxJson').innerText = JSON.stringify(parsed, null, 2);
-        }
-    }
-
-    function appendQuickText(text) {
-        const inputEl = document.getElementById('mainInput');
-        inputEl.value += text;
-        inputEl.focus();
-        handleInput(inputEl.value, 'main');
-    }
-
-    function addSchedule() {
-        const inputEl = document.getElementById('mainInput');
-        const parsed = parseNaturalLanguage(inputEl.value);
-
-        if (!parsed) {
-            alert('Mohon ketik jadwal kegiatan terlebih dahulu.');
-            return;
-        }
-
-        schedules.push(parsed);
-        localStorage.setItem('smart_guru_events', JSON.stringify(schedules));
-
-        inputEl.value = '';
-        document.getElementById('mainChips').innerHTML = '';
-        renderSchedules();
-    }
-
-    function deleteSchedule(index) {
-        schedules.splice(index, 1);
-        localStorage.setItem('smart_guru_events', JSON.stringify(schedules));
-        renderSchedules();
-    }
-
-    function renderSchedules() {
-        const listEl = document.getElementById('scheduleList');
-        if (schedules.length === 0) {
-            listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.95rem; text-align: center; padding: 24px;">Belum ada agenda atau jadwal mengajar yang tercatat.</p>';
-            return;
-        }
-
-        listEl.innerHTML = schedules.map((item, index) => `
-            <li class="schedule-item">
-                <div class="schedule-info">
-                    <h4>${item.title}</h4>
-                    <div class="schedule-meta">
-                        <span>📅 <strong>${item.date}</strong></span>
-                        <span>⏰ <strong>${item.time} WIB</strong></span>
-                        <span>⏳ ${item.duration}</span>
-                        <span>🔔 ${item.reminder}</span>
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <label style="font-size:0.85rem; font-weight:600; margin-bottom:8px; display:block;">Rekap Kehadiran Siswa:</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div>
+                        <label style="font-size:0.8rem;">Hadir:</label>
+                        <input type="number" id="jHadir" class="form-control" value="30">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;">Sakit:</label>
+                        <input type="number" id="jSakit" class="form-control" value="0">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;">Izin / Alpa:</label>
+                        <input type="number" id="jIzin" class="form-control" value="0">
                     </div>
                 </div>
-                <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
-            </li>
+            </div>
+
+            <div class="form-group">
+                <label>Uraian / Ringkasan Materi & Kegiatan:</label>
+                <textarea id="jSummary" class="form-control" rows="3" placeholder="Tuliskan uraian ringkas pelaksanaan KBM..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Foto Dokumentasi PBM:</label>
+                <div class="photo-preview-box" onclick="document.getElementById('jPhotoInput').click()">
+                    <span id="jPhotoPlaceholder">📷 Klik untuk upload foto kegiatan / bukti PBM</span>
+                    <img id="jPhotoPreview" style="display:none;" />
+                </div>
+                <input type="file" id="jPhotoInput" accept="image/*" style="display:none;" onchange="handleJournalPhoto(this)">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('journalModal')">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Jurnal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: TAMBAH / EDIT JADWAL -->
+<div id="scheduleModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="scheduleModalTitle">Tambah Jadwal Mengajar</h3>
+            <button class="modal-close" onclick="closeModal('scheduleModal')">✕</button>
+        </div>
+        <form id="scheduleForm" onsubmit="saveScheduleItem(event)">
+            <input type="hidden" id="editScheduleIndex" value="-1">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Hari:</label>
+                    <select id="schDay" class="form-control">
+                        <option value="SENIN">SENIN</option>
+                        <option value="SELASA">SELASA</option>
+                        <option value="RABU">RABU</option>
+                        <option value="KAMIS">KAMIS</option>
+                        <option value="JUMAT">JUMAT</option>
+                        <option value="SABTU">SABTU</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Pelaksanaan:</label>
+                    <input type="date" id="schDate" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Kelas:</label>
+                    <input type="text" id="schClass" class="form-control" placeholder="Contoh: XI DPIB 1" required>
+                </div>
+                <div class="form-group">
+                    <label>Ruangan / Lokasi:</label>
+                    <input type="text" id="schRoom" class="form-control" placeholder="Contoh: Lab Komputer" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mata Pelajaran / Topik:</label>
+                <input type="text" id="schSubject" class="form-control" placeholder="Contoh: KKA (Koding & Kecerdasan Artifisial)" required>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Jam Mulai - Selesai:</label>
+                    <input type="text" id="schTime" class="form-control" value="07:00 - 09:30" required>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('scheduleModal')">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Jadwal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* ================= STATE & STORAGE ================= */
+    let appData = {
+        profile: {
+            name: "Aan Kurniawan, S.Pd.,M.Ars",
+            nip: "12321312",
+            school: "SMK Negeri 1",
+            subject: "Koding & Kecerdasan Artifisial",
+            signature: ""
+        },
+        security: {
+            enabled: "no",
+            pin: "1234"
+        },
+        schedules: [
+            {
+                id: 1,
+                day: "SENIN",
+                date: "2026-07-27",
+                className: "XI DPIB 1",
+                room: "Lab Komputer",
+                subject: "KKA (Koding & Kecerdasan Artifisial)",
+                time: "07:00 - 09:30",
+                status: "terisi",
+                journal: {
+                    totalStudents: 30,
+                    hadir: 30,
+                    sakit: 0,
+                    izin: 0,
+                    condition: "Kondusif",
+                    summary: "Pembelajaran KKA dilaksanakan dengan metode Praktik. Suasana kelas berlangsung Kondusif.",
+                    photo: ""
+                }
+            },
+            {
+                id: 2,
+                day: "SENIN",
+                date: "2026-07-27",
+                className: "XI DPIB 1",
+                room: "Ruang Class 1",
+                subject: "KKA (Koding & Kecerdasan Artifisial)",
+                time: "09:45 - 11:30",
+                status: "belum",
+                journal: null
+            }
+        ]
+    };
+
+    let tempJournalPhoto = "";
+    let tempSignature = "";
+
+    function initApp() {
+        const saved = localStorage.getItem('smart_jurnal_guru_data');
+        if (saved) {
+            try { appData = JSON.parse(saved); } catch(e){}
+        }
+
+        // Set profile form
+        document.getElementById('profName').value = appData.profile.name;
+        document.getElementById('profNip').value = appData.profile.nip;
+        document.getElementById('profSchool').value = appData.profile.school;
+        document.getElementById('profSubject').value = appData.profile.subject;
+        document.getElementById('headerName').innerText = "👨‍🏫 " + appData.profile.name;
+
+        if (appData.profile.signature) {
+            tempSignature = appData.profile.signature;
+            let img = document.getElementById('sigPreviewImg');
+            img.src = tempSignature;
+            img.style.display = 'block';
+            document.getElementById('sigPlaceholder').style.display = 'none';
+        }
+
+        // Security
+        document.getElementById('pinEnabled').value = appData.security.enabled;
+        if (appData.security.enabled === 'yes') {
+            document.getElementById('pinGroup').style.display = 'block';
+            document.getElementById('lockScreen').classList.remove('hidden');
+        }
+
+        // Set date filter default to today or first available
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('journalDateFilter').value = todayStr;
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        renderSchedules();
+        renderManagementList();
+    }
+
+    function saveData() {
+        localStorage.setItem('smart_jurnal_guru_data', JSON.stringify(appData));
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('liveClock').innerText = `${hours}.${minutes}`;
+
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('dateString').innerText = now.toLocaleDateString('id-ID', options);
+        document.getElementById('dayName').innerText = "Hari Ini (" + now.toLocaleDateString('id-ID', {weekday:'long'}) + ")";
+    }
+
+    /* ================= TAB SWITCHING ================= */
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if (tabId === 'beranda') document.getElementById('navBeranda').classList.add('active');
+        if (tabId === 'laporan') document.getElementById('navLaporan').classList.add('active');
+        if (tabId === 'pengaturan') document.getElementById('navPengaturan').classList.add('active');
+    }
+
+    /* ================= SCHEDULE & JOURNAL RENDERING ================= */
+    function filterScheduleByDate(dateVal) {
+        renderSchedules(dateVal);
+    }
+
+    function renderSchedules(filterDate = null) {
+        if (!filterDate) {
+            filterDate = document.getElementById('journalDateFilter').value;
+        }
+        const listEl = document.getElementById('scheduleList');
+        const filtered = appData.schedules.filter(item => item.date === filterDate);
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = `<li style="text-align:center; color: var(--text-muted); padding: 20px;">Tidak ada jadwal mengajar pada tanggal ${filterDate}. <br><button class="btn btn-primary" style="margin-top:10px;" onclick="openAddScheduleModal()">+ Tambah Jadwal</button></li>`;
+            return;
+        }
+
+        listEl.innerHTML = filtered.map((item) => {
+            const originalIndex = appData.schedules.findIndex(s => s.id === item.id);
+            const isTerisi = item.status === 'terisi';
+            return `
+                <li class="schedule-card">
+                    <div class="schedule-info">
+                        <h4>${item.className} <span class="badge-room">${item.room}</span></h4>
+                        <div style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">${item.subject}</div>
+                        <div class="schedule-meta">
+                            <span>⏰ <strong>${item.time}</strong></span>
+                            <span>📅 ${item.day}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        ${isTerisi ? 
+                            `<button class="btn btn-success" onclick="openJournalModal(${originalIndex})">✓ Terisi</button>` : 
+                            `<button class="btn btn-primary" onclick="openJournalModal(${originalIndex})">Isi Jurnal</button>`
+                        }
+                        <button class="btn btn-outline" style="padding: 8px 10px;" onclick="openEditScheduleModal(${originalIndex})" title="Edit Jadwal">✏️</button>
+                        <button class="btn btn-danger" style="padding: 8px 10px;" onclick="deleteScheduleItem(${originalIndex})" title="Hapus Jadwal">🗑️</button>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    function renderManagementList() {
+        const mgmtEl = document.getElementById('managementList');
+        if (appData.schedules.length === 0) {
+            mgmtEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">Belum ada data jadwal tersimpan.</p>';
+            return;
+        }
+
+        mgmtEl.innerHTML = appData.schedules.map((item, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+                <div>
+                    <strong>${item.className}</strong> - ${item.subject} (${item.date}) <span style="font-size:0.8rem; color:var(--text-muted);">[${item.status}]</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size:0.8rem;" onclick="openEditScheduleModal(${idx})">Edit</button>
+                    <button class="btn btn-danger" style="padding: 4px 10px; font-size:0.8rem;" onclick="deleteScheduleItem(${idx})">Hapus</button>
+                </div>
+            </div>
         `).join('');
     }
 
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    /* ================= JOURNAL MODAL ================= */
+    let currentScheduleIndex = -1;
 
-        if (tabName === 'jadwal') {
-            document.getElementById('tab-jadwal').classList.add('active');
-            document.getElementById('btnTabJadwal').classList.add('active');
+    function openJournalModal(index) {
+        currentScheduleIndex = index;
+        const item = appData.schedules[index];
+
+        document.getElementById('jClass').value = item.className;
+        document.getElementById('jSubject').value = item.subject;
+
+        if (item.journal) {
+            document.getElementById('jTotalStudents').value = item.journal.totalStudents;
+            document.getElementById('jHadir').value = item.journal.hadir;
+            document.getElementById('jSakit').value = item.journal.sakit;
+            document.getElementById('jIzin').value = item.journal.izin;
+            document.getElementById('jCondition').value = item.journal.condition;
+            document.getElementById('jSummary').value = item.journal.summary;
+            tempJournalPhoto = item.journal.photo || "";
         } else {
-            document.getElementById('tab-pengaturan').classList.add('active');
-            document.getElementById('btnTabPengaturan').classList.add('active');
+            document.getElementById('jTotalStudents').value = 30;
+            document.getElementById('jHadir').value = 30;
+            document.getElementById('jSakit').value = 0;
+            document.getElementById('jIzin').value = 0;
+            document.getElementById('jCondition').value = "Kondusif";
+            document.getElementById('jSummary').value = `Pembelajaran ${item.subject} dilaksanakan dengan baik dan lancar.`;
+            tempJournalPhoto = "";
         }
+
+        const imgEl = document.getElementById('jPhotoPreview');
+        const phEl = document.getElementById('jPhotoPlaceholder');
+        if (tempJournalPhoto) {
+            imgEl.src = tempJournalPhoto;
+            imgEl.style.display = 'block';
+            phEl.style.display = 'none';
+        } else {
+            imgEl.style.display = 'none';
+            phEl.style.display = 'block';
+        }
+
+        document.getElementById('journalModal').classList.add('open');
+    }
+
+    function handleJournalPhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempJournalPhoto = e.target.result;
+                const imgEl = document.getElementById('jPhotoPreview');
+                imgEl.src = tempJournalPhoto;
+                imgEl.style.display = 'block';
+                document.getElementById('jPhotoPlaceholder').style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function calcAttendance() {
+        const total = parseInt(document.getElementById('jTotalStudents').value) || 0;
+        const sakit = parseInt(document.getElementById('jSakit').value) || 0;
+        const izin = parseInt(document.getElementById('jIzin').value) || 0;
+        let hadir = total - (sakit + izin);
+        if (hadir < 0) hadir = 0;
+        document.getElementById('jHadir').value = hadir;
+    }
+
+    function saveJournalEntry(e) {
+        e.preventDefault();
+        if (currentScheduleIndex === -1) return;
+
+        const journalData = {
+            totalStudents: parseInt(document.getElementById('jTotalStudents').value),
+            hadir: parseInt(document.getElementById('jHadir').value),
+            sakit: parseInt(document.getElementById('jSakit').value),
+            izin: parseInt(document.getElementById('jIzin').value),
+            condition: document.getElementById('jCondition').value,
+            summary: document.getElementById('jSummary').value,
+            photo: tempJournalPhoto
+        };
+
+        appData.schedules[currentScheduleIndex].status = 'terisi';
+        appData.schedules[currentScheduleIndex].journal = journalData;
+
+        saveData();
+        closeModal('journalModal');
+        renderSchedules();
+        renderManagementList();
+        alert('✨ Jurnal pelaksanaan PBM berhasil disimpan!');
+    }
+
+    /* ================= SCHEDULE ADD / EDIT MODAL ================= */
+    function openAddScheduleModal() {
+        document.getElementById('editScheduleIndex').value = "-1";
+        document.getElementById('scheduleModalTitle').innerText = "Tambah Jadwal Mengajar";
+        document.getElementById('schClass').value = "";
+        document.getElementById('schRoom').value = "Lab Komputer";
+        document.getElementById('schSubject').value = "";
+        document.getElementById('schDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('scheduleModal').classList.add('open');
+    }
+
+    function openEditScheduleModal(index) {
+        const item = appData.schedules[index];
+        document.getElementById('editScheduleIndex').value = index;
+        document.getElementById('scheduleModalTitle').innerText = "Edit Jadwal Mengajar";
+        document.getElementById('schDay').value = item.day;
+        document.getElementById('schDate').value = item.date;
+        document.getElementById('schClass').value = item.className;
+        document.getElementById('schRoom').value = item.room;
+        document.getElementById('schSubject').value = item.subject;
+        document.getElementById('schTime').value = item.time;
+        document.getElementById('scheduleModal').classList.add('open');
+    }
+
+    function saveScheduleItem(e) {
+        e.preventDefault();
+        const index = parseInt(document.getElementById('editScheduleIndex').value);
+
+        const newItem = {
+            id: index === -1 ? Date.now() : appData.schedules[index].id,
+            day: document.getElementById('schDay').value,
+            date: document.getElementById('schDate').value,
+            className: document.getElementById('schClass').value,
+            room: document.getElementById('schRoom').value,
+            subject: document.getElementById('schSubject').value,
+            time: document.getElementById('schTime').value,
+            status: index === -1 ? 'belum' : appData.schedules[index].status,
+            journal: index === -1 ? null : appData.schedules[index].journal
+        };
+
+        if (index === -1) {
+            appData.schedules.push(newItem);
+        } else {
+            appData.schedules[index] = newItem;
+        }
+
+        saveData();
+        closeModal('scheduleModal');
+        renderSchedules();
+        renderManagementList();
+        alert('✨ Jadwal berhasil disimpan!');
+    }
+
+    function deleteScheduleItem(index) {
+        if (confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
+            appData.schedules.splice(index, 1);
+            saveData();
+            renderSchedules();
+            renderManagementList();
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('open');
+    }
+
+    /* ================= PROFILE & SIGNATURE ================= */
+    function saveProfile(e) {
+        e.preventDefault();
+        appData.profile.name = document.getElementById('profName').value;
+        appData.profile.nip = document.getElementById('profNip').value;
+        appData.profile.school = document.getElementById('profSchool').value;
+        appData.profile.subject = document.getElementById('profSubject').value;
+        appData.profile.signature = tempSignature;
+
+        document.getElementById('headerName').innerText = "👨‍🏫 " + appData.profile.name;
+        saveData();
+        alert('✨ Profil dan Tanda Tangan berhasil diperbarui!');
+    }
+
+    function handleSigUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempSignature = e.target.result;
+                const img = document.getElementById('sigPreviewImg');
+                img.src = tempSignature;
+                img.style.display = 'block';
+                document.getElementById('sigPlaceholder').style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    /* ================= SECURITY PIN LOCK ================= */
+    let enteredPin = "";
+    function togglePinSetting(val) {
+        appData.security.enabled = val;
+        document.getElementById('pinGroup').style.display = val === 'yes' ? 'block' : 'none';
+        saveData();
+    }
+
+    function savePin() {
+        const p = document.getElementById('newPin').value;
+        if (p.length !== 4) {
+            alert('PIN harus tepat 4 digit angka.');
+            return;
+        }
+        appData.security.pin = p;
+        saveData();
+        alert('✨ PIN Keamanan berhasil diperbarui!');
+    }
+
+    function pressPin(val) {
+        if (val === 'C') {
+            enteredPin = "";
+        } else if (val === 'OK') {
+            if (enteredPin === appData.security.pin) {
+                document.getElementById('lockScreen').classList.add('hidden');
+                enteredPin = "";
+                updatePinDots();
+            } else {
+                alert('PIN Salah! Silakan coba lagi.');
+                enteredPin = "";
+            }
+        } else {
+            if (enteredPin.length < 4) {
+                enteredPin += val;
+            }
+        }
+        updatePinDots();
+    }
+
+    function updatePinDots() {
+        for (let i = 1; i <= 4; i++) {
+            const dot = document.getElementById('dot' + i);
+            if (i <= enteredPin.length) {
+                dot.classList.add('filled');
+            } else {
+                dot.classList.remove('filled');
+            }
+        }
+    }
+
+    /* ================= LAPORAN / REPORT & PDF PREVIEW ================= */
+    function generateReport() {
+        const period = document.getElementById('reportPeriod').value;
+        const format = document.getElementById('reportFormat').value;
+
+        if (format === 'csv') {
+            exportCSV();
+            return;
+        }
+
+        // Generate printable PDF view window
+        const win = window.open('', '_blank');
+        win.document.write(getReportHTML(period));
+        win.document.close();
+        win.focus();
+        setTimeout(() => { win.print(); }, 500);
+    }
+
+    function previewReport() {
+        const period = document.getElementById('reportPeriod').value;
+        const container = document.getElementById('previewContainer');
+        container.innerHTML = getReportHTML(period, true);
+        document.getElementById('previewCard').style.display = 'block';
+    }
+
+    function getReportHTML(period, isEmbed = false) {
+        const filtered = appData.schedules.filter(item => {
+            if (item.status !== 'terisi') return false;
+            return true; // Simplified for demo
+        });
+
+        const rowsHTML = filtered.map(item => {
+            const j = item.journal || {};
+            const photoTag = j.photo ? `<img src="${j.photo}" style="max-height:50px; border-radius:4px;" />` : '-';
+            return `
+                <tr>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${item.day}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${item.date}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${item.className}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${j.totalStudents || 30}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${j.hadir || 30}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${j.sakit || 0}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${j.izin || 0}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:left; font-size:12px;">${j.summary || '-'}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${j.condition || 'Kondusif'}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">
+                        ${appData.profile.signature ? `<img src="${appData.profile.signature}" style="max-height:40px;" />` : 'Paraf'}
+                    </td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${photoTag}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const content = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Rekap Jurnal PBM</title>
+                <style>
+                    body { font-family: Arial, sans-serif; color: #000; padding: 20px; }
+                    h2 { font-size: 16px; margin-bottom: 4px; }
+                    p { font-size: 13px; margin-bottom: 16px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+                    th { background: #f1f5f9; border: 1px solid #000; padding: 8px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <h2>REKAP JURNAL PELAKSANAAN PBM (WEEKLY / MONTHLY)</h2>
+                <p>Guru Pengajar: <strong>${appData.profile.name}</strong> | NIP: ${appData.profile.nip} | Sekolah: ${appData.profile.school}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>HARI</th>
+                            <th>TANGGAL</th>
+                            <th>KELAS</th>
+                            <th>JML SISWA</th>
+                            <th>HADIR</th>
+                            <th>SAKIT</th>
+                            <th>IZIN</th>
+                            <th>SUB MATERI</th>
+                            <th>KONDISI PBM</th>
+                            <th>PARAF GURU</th>
+                            <th>FOTO PBM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHTML || '<tr><td colspan="11" style="border:1px solid #000; text-align:center; padding:15px;">Belum ada data jurnal terisi.</td></tr>'}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+        return content;
+    }
+
+    function exportCSV() {
+        let csv = "Hari,Tanggal,Kelas,Jumlah Siswa,Hadir,Sakit,Izin,Sub Materi,Kondisi
+";
+        appData.schedules.forEach(item => {
+            if (item.status === 'terisi' && item.journal) {
+                csv += `"${item.day}","${item.date}","${item.className}",${item.journal.totalStudents},${item.journal.hadir},${item.journal.sakit},${item.journal.izin},"${item.journal.summary}","${item.journal.condition}"
+`;
+            }
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'rekap_jurnal_guru.csv');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     document.addEventListener('DOMContentLoaded', initApp);

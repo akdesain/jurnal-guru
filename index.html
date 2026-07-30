@@ -1,90 +1,226 @@
+// --- STATE & LOCALSTORAGE MANAGEMENT ---
+let profile = JSON.parse(localStorage.getItem('teacherProfile')) || {
+  name: '',
+  nip: '',
+  school: '',
+  signature: ''
+};
+
+let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+
+// Simpan data ke localStorage secara otomatis
+function saveData() {
+  localStorage.setItem('teacherProfile', JSON.stringify(profile));
+  localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+}
+
+// --- NAVIGASI / VIEW SWITCHER ---
+function switchView(viewId) {
+  const views = ['dashboardView', 'formView', 'profileView'];
+  views.forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = (v === viewId) ? 'block' : 'none';
+  });
+
+  if (viewId === 'dashboardView') {
+    renderDashboard();
+  }
+}
+
+// --- RENDER DASHBOARD & TABEL ---
+function renderDashboard() {
+  const tableBody = document.getElementById('journalTableBody');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = '';
+  
+  // Filter berdasarkan NIP guru yang aktif
+  const userJournals = journalEntries.filter(j => j.teacherNip === profile.nip);
+
+  if (userJournals.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Belum ada data jurnal. Silakan tambah jurnal baru.</td></tr>`;
+    return;
+  }
+
+  userJournals.forEach((j, index) => {
+    // Cari index asli di array utama (journalEntries) agar penghapusan akurat
+    const realIndex = journalEntries.findIndex(item => item === j);
+    
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${j.dayName || '-'}</td>
+      <td>${j.date || '-'}</td>
+      <td>${j.subject || '-'}</td>
+      <td>H: ${j.present || 0} | S: ${j.sick || 0} | I: ${j.permission || 0} | A: ${j.absent || 0}</td>
+      <td>${j.topic || '-'}</td>
+      <td>${j.condition || '-'}</td>
+      <td style="text-align: center;">${j.signature ? '✔' : '-'}</td>
+      <td style="text-align: center;">${j.photo ? '✔' : '-'}</td>
+      <td style="text-align: center;">
+        <button class="btn-delete" onclick="deleteJournal(${realIndex})">Hapus</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+// --- HANDLE FORM SUBMIT (ISI JURNAL -> KEMBALI KE DASHBOARD) ---
+function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const newEntry = {
+    teacherNip: profile.nip,
+    dayName: document.getElementById('dayName').value,
+    date: document.getElementById('date').value,
+    subject: document.getElementById('subject').value,
+    present: parseInt(document.getElementById('present').value) || 0,
+    sick: parseInt(document.getElementById('sick').value) || 0,
+    permission: parseInt(document.getElementById('permission').value) || 0,
+    absent: parseInt(document.getElementById('absent').value) || 0,
+    topic: document.getElementById('topic').value,
+    condition: document.getElementById('condition').value,
+    signature: profile.signature || '',
+    photo: window.uploadedPhotoBase64 || ''
+  };
+
+  // Masukkan ke array dan simpan
+  journalEntries.push(newEntry);
+  saveData();
+
+  // Reset form
+  event.target.reset();
+  window.uploadedPhotoBase64 = null;
+
+  showToast("Jurnal berhasil disimpan!");
+
+  // Otomatis kembali ke dashboard dan refresh tabel
+  switchView('dashboardView');
+}
+
+// --- FUNGSI HAPUS JURNAL (LANGSUNG HILANG) ---
+function deleteJournal(index) {
+  if (confirm("Apakah Anda yakin ingin menghapus jurnal ini?")) {
+    // Hapus data dari array berdasarkan index
+    journalEntries.splice(index, 1);
+    
+    // Perbarui localStorage
+    saveData();
+    
+    // Perbarui tampilan dashboard seketika
+    renderDashboard();
+    
+    showToast("Jurnal berhasil dihapus!");
+  }
+}
+
+// --- GENERATE PDF (COMPACT HEADER) ---
 function generatePDF(type) {
-      showToast(`Membuat laporan PDF ${type}...`);
-      setTimeout(() => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape');
+  showToast(`Membuat laporan PDF ${type}...`);
+  setTimeout(() => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
 
-        doc.setFontSize(14);
-        doc.text(`MINGGU 1 - LAPORAN JURNAL MENGAJAR (${type.toUpperCase()})`, 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Guru Pengajar: ${profile.name} | NIP: ${profile.nip} | Sekolah: ${profile.school || '-'}`, 14, 22);
+    doc.setFontSize(14);
+    doc.text(`MINGGU 1 - LAPORAN JURNAL MENGAJAR (${type.toUpperCase()})`, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Guru Pengajar: ${profile.name} | NIP: ${profile.nip} | Sekolah: ${profile.school || '-'}`, 14, 22);
 
-        const userJournals = journalEntries.filter(j => j.teacherNip === profile.nip);
+    const userJournals = journalEntries.filter(j => j.teacherNip === profile.nip);
 
-        const bodyData = userJournals.map(j => [
-          j.dayName,
-          j.date,
-          j.subject,
-          j.present,
-          j.sick,
-          j.permission,
-          j.absent,
-          j.topic,
-          j.condition,
-          '', 
-          ''  
-        ]);
+    const bodyData = userJournals.map(j => [
+      j.dayName,
+      j.date,
+      j.subject,
+      j.present,
+      j.sick,
+      j.permission,
+      j.absent,
+      j.topic,
+      j.condition,
+      '', 
+      ''  
+    ]);
 
-        doc.autoTable({
-          startY: 28,
-          head: [
-            [
-              { content: 'HARI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'TANGGAL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'KELAS / MAPEL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'JUMLAH SISWA', colSpan: 4, styles: { halign: 'center' } },
-              { content: 'SUB MATERI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'KET. PELAKSANAAN PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'PARAF GURU', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'FOTO PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
-            ],
-            [
-              { content: 'HADIR', styles: { halign: 'center' } },
-              { content: 'SAKIT', styles: { halign: 'center' } },
-              { content: 'IZIN', styles: { halign: 'center' } },
-              { content: 'ALPA', styles: { halign: 'center' } }
-            ]
-          ],
-          body: bodyData,
-          theme: 'grid',
-          // Perubahan untuk membuat header lebih ramping & compact
-          headStyles: { fillColor: [23, 105, 209], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
-          styles: { fontSize: 7.5, cellPadding: 2, valign: 'middle' },
-          columnStyles: {
-            0: { cellWidth: 22 },
-            1: { cellWidth: 22 },
-            2: { cellWidth: 38 },
-            3: { cellWidth: 14, halign: 'center' },
-            4: { cellWidth: 14, halign: 'center' },
-            5: { cellWidth: 14, halign: 'center' },
-            6: { cellWidth: 14, halign: 'center' },
-            7: { cellWidth: 45 },
-            8: { cellWidth: 45 },
-            9: { cellWidth: 25, halign: 'center' },
-            10: { cellWidth: 28, halign: 'center' }
-          },
-          didDrawCell: function (data) {
-            if (data.section === 'body' && data.column.index === 9 && profile.signature) {
-              try {
-                doc.addImage(profile.signature, 'PNG', data.cell.x + 1.5, data.cell.y + 1.5, data.cell.width - 3, data.cell.height - 3);
-              } catch (err) {
-                console.error(err);
-              }
-            }
-            if (data.section === 'body' && data.column.index === 10) {
-              const journalItem = userJournals[data.row.index];
-              if (journalItem && journalItem.photo) {
-                try {
-                  doc.addImage(journalItem.photo, 'JPEG', data.cell.x + 1.5, data.cell.y + 1.5, data.cell.width - 3, data.cell.height - 3);
-                } catch (err) {
-                  console.error(err);
-                }
-              }
+    doc.autoTable({
+      startY: 28,
+      head: [
+        [
+          { content: 'HARI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'TANGGAL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'KELAS / MAPEL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'JUMLAH SISWA', colSpan: 4, styles: { halign: 'center' } },
+          { content: 'SUB MATERI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'KET. PELAKSANAAN PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'PARAF GURU', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+          { content: 'FOTO PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
+        ],
+        [
+          { content: 'HADIR', styles: { halign: 'center' } },
+          { content: 'SAKIT', styles: { halign: 'center' } },
+          { content: 'IZIN', styles: { halign: 'center' } },
+          { content: 'ALPA', styles: { halign: 'center' } }
+        ]
+      ],
+      body: bodyData,
+      theme: 'grid',
+      headStyles: { fillColor: [23, 105, 209], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      styles: { fontSize: 7.5, cellPadding: 2, valign: 'middle' },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 38 },
+        3: { cellWidth: 14, halign: 'center' },
+        4: { cellWidth: 14, halign: 'center' },
+        5: { cellWidth: 14, halign: 'center' },
+        6: { cellWidth: 14, halign: 'center' },
+        7: { cellWidth: 45 },
+        8: { cellWidth: 45 },
+        9: { cellWidth: 25, halign: 'center' },
+        10: { cellWidth: 28, halign: 'center' }
+      },
+      didDrawCell: function (data) {
+        if (data.section === 'body' && data.column.index === 9 && profile.signature) {
+          try {
+            doc.addImage(profile.signature, 'PNG', data.cell.x + 1.5, data.cell.y + 1.5, data.cell.width - 3, data.cell.height - 3);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+        if (data.section === 'body' && data.column.index === 10) {
+          const journalItem = userJournals[data.row.index];
+          if (journalItem && journalItem.photo) {
+            try {
+              doc.addImage(journalItem.photo, 'JPEG', data.cell.x + 1.5, data.cell.y + 1.5, data.cell.width - 3, data.cell.height - 3);
+            } catch (err) {
+              console.error(err);
             }
           }
-        });
+        }
+      }
+    });
 
-        doc.save(`Jurnal_${profile.name}_${type}.pdf`);
-        showToast("PDF berhasil diunduh sesuai format!");
-      }, 1000);
-    }
+    doc.save(`Jurnal_${profile.name}_${type}.pdf`);
+    showToast("PDF berhasil diunduh!");
+  }, 1000);
+}
+
+// Helper untuk Toast Notification aman
+function showToast(message) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = "position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 9999;";
+    document.body.appendChild(toast);
+  }
+  toast.innerText = message;
+  toast.style.display = 'block';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3000);
+}
+
+// Inisialisasi awal saat halaman dimuat
+window.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+});

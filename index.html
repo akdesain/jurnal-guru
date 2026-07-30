@@ -1,538 +1,582 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Jadwal Pintar (Smart NLP Schedule)</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --badge-bg: #eff6ff;
-            --badge-text: #1d4ed8;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-        }
-
-        /* Header Navigation */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            background: var(--card-bg);
-            padding: 16px 24px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .brand h1 {
-            font-size: 1.25rem;
-            color: var(--primary);
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-        }
-
-        .tab-btn {
-            padding: 8px 16px;
-            border: none;
-            background: transparent;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        /* Layout Cards */
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Input Controls */
-        .smart-input-container {
-            position: relative;
-        }
-
-        .smart-input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .smart-input:focus {
-            border-color: var(--primary);
-        }
-
-        /* Live Tags / Feedback Chips */
-        .preview-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-            min-height: 32px;
-        }
-
-        .chip {
-            background: var(--badge-bg);
-            color: var(--badge-text);
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .chip-default {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        /* Form elements for Settings */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-main);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            background: var(--primary);
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background: var(--primary-hover);
-        }
-
-        /* List Schedule */
-        .schedule-list {
-            list-style: none;
-        }
-
-        .schedule-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .schedule-info h4 {
-            font-size: 1rem;
-            margin-bottom: 4px;
-        }
-
-        .schedule-info p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        /* Section Visibility Toggle */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Sandbox Display Box */
-        .sandbox-box {
-            background: #0f172a;
-            color: #38bdf8;
-            padding: 16px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            margin-top: 12px;
-            white-space: pre-wrap;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <!-- Top Navigation Header -->
-    <header>
-        <div class="brand">
-            <h1>📅 SmartScheduler</h1>
-        </div>
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('jadwal')">Jadwal Utama</button>
-            <button class="tab-btn" onclick="switchTab('pengaturan')">⚙️ Pengaturan System</button>
-        </div>
-    </header>
-
-    <!-- ================= TAB 1: JADWAL UTAMA ================= -->
-    <section id="tab-jadwal" class="tab-content active">
-        <div class="card">
-            <h2 class="card-title">Tambah Jadwal Baru</h2>
-            <div class="smart-input-container">
-                <input type="text" id="mainInput" class="smart-input" placeholder="Ketik jadwal... (misal: 'Rapat tim besok jam 10 pagi')" oninput="handleInput(this.value, 'main')">
-            </div>
-            
-            <!-- Realtime Parsed Chips -->
-            <div id="mainChips" class="preview-chips"></div>
-
-            <div style="margin-top: 16px; text-align: right;">
-                <button class="btn" onclick="addSchedule()">+ Simpan Jadwal</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2 class="card-title">Daftar Agendaku</h2>
-            <ul id="scheduleList" class="schedule-list">
-                <!-- Data akan dirender secara dinamis di sini -->
-            </ul>
-        </div>
-    </section>
-
-    <!-- ================= TAB 2: PENGATURAN SYSTEM ================= -->
-    <section id="tab-pengaturan" class="tab-content">
-        <div class="card">
-            <h2 class="card-title">⚙️ Konfigurasi Standar Jadwal Pintar</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-                Nilai default ini akan dipakai otomatis oleh sistem jika Anda tidak mengetikkan informasi jam, durasi, atau pengingat secara spesifik.
-            </p>
-
-            <form id="settingsForm" onsubmit="saveSettings(event)">
-                <div class="form-group">
-                    <label for="defaultTime">Waktu Default (Jika jam tidak diketik):</label>
-                    <input type="time" id="defaultTime" class="form-control" value="09:00">
-                </div>
-
-                <div class="form-group">
-                    <label for="defaultDuration">Durasi Default (Menit):</label>
-                    <select id="defaultDuration" class="form-control">
-                        <option value="15">15 Menit</option>
-                        <option value="30" selected>30 Menit</option>
-                        <option value="60">1 Jam (60 Menit)</option>
-                        <option value="120">2 Jam (120 Menit)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="defaultReminder">Pengingat Otomatis:</label>
-                    <select id="defaultReminder" class="form-control">
-                        <option value="5">5 Menit Sebelum</option>
-                        <option value="15" selected>15 Menit Sebelum</option>
-                        <option value="60">1 Jam Sebelum</option>
-                        <option value="1440">1 Hari Sebelum</option>
-                        <option value="0">Tanpa Pengingat</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn">Simpan Pengaturan</button>
-            </form>
-        </div>
-
-        <!-- LIVE PLAYGROUND / SANDBOX -->
-        <div class="card" style="border-color: #3b82f6;">
-            <h2 class="card-title">🧪 Area Uji Coba (Live Playground)</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-                Coba ketik jadwal di bawah ini untuk melihat bagaimana algoritma memproses kalimat Anda secara langsung berdasarkan **Pengaturan** di atas.
-            </p>
-
-            <div class="smart-input-container">
-                <input type="text" id="sandboxInput" class="smart-input" placeholder="Uji coba ketik: 'Gym lusa jam 7 malam'..." oninput="handleInput(this.value, 'sandbox')">
-            </div>
-
-            <!-- Chips hasil ekstraksi -->
-            <div id="sandboxChips" class="preview-chips"></div>
-
-            <!-- Output JSON Preview -->
-            <div id="sandboxJson" class="sandbox-box">// Hasil ekstraksi objek JSON sistem akan tampil di sini...</div>
-        </div>
-    </section>
-</div>
-
-<script>
-    /* ================= 1. SYSTEM STATE & SETTINGS ================= */
-    let config = {
-        defaultTime: '09:00',
-        defaultDuration: '30',
-        defaultReminder: '15'
-    };
-
-    let schedules = [];
-
-    // Muat Pengaturan dari LocalStorage saat pertama kali aplikasi dijalankan
-    function initApp() {
-        const savedConfig = localStorage.getItem('smart_scheduler_config');
-        if (savedConfig) {
-            config = JSON.parse(savedConfig);
-            document.getElementById('defaultTime').value = config.defaultTime;
-            document.getElementById('defaultDuration').value = config.defaultDuration;
-            document.getElementById('defaultReminder').value = config.defaultReminder;
-        }
-
-        const savedSchedules = localStorage.getItem('smart_scheduler_events');
-        if (savedSchedules) {
-            schedules = JSON.parse(savedSchedules);
-            renderSchedules();
-        }
-    }
-
-    function saveSettings(e) {
-        e.preventDefault();
-        config.defaultTime = document.getElementById('defaultTime').value;
-        config.defaultDuration = document.getElementById('defaultDuration').value;
-        config.defaultReminder = document.getElementById('defaultReminder').value;
-
-        localStorage.setItem('smart_scheduler_config', JSON.stringify(config));
-        alert('✅ Pengaturan berhasil disimpan!');
-    }
-
-    /* ================= 2. NATURAL LANGUAGE PARSER (ENGINE) ================= */
-    function parseNaturalLanguage(text) {
-        if (!text || text.trim() === '') return null;
-
-        let workingText = text.toLowerCase();
-        let eventDate = new Date();
-        let isDateDetected = false;
-        let isTimeDetected = false;
-
-        // A. Deteksi Tanggal
-        if (workingText.includes('besok lusa') || workingText.includes('lusa')) {
-            eventDate.setDate(eventDate.getDate() + 2);
-            workingText = workingText.replace(/besok lusa|lusa/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('besok')) {
-            eventDate.setDate(eventDate.getDate() + 1);
-            workingText = workingText.replace(/besok/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('hari ini')) {
-            workingText = workingText.replace(/hari ini/gi, '');
-            isDateDetected = true;
-        }
-
-        // B. Deteksi Waktu (Misal: "jam 10", "jam 14:30", "jam 7 malam", "pukul 9 pagi")
-        let hours = parseInt(config.defaultTime.split(':')[0]);
-        let minutes = parseInt(config.defaultTime.split(':')[1]);
-
-        const timeRegex = /(?:jam|pukul)\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|siang|sore|malam)?/i;
-        const match = workingText.match(timeRegex);
-
-        if (match) {
-            isTimeDetected = true;
-            let h = parseInt(match[1]);
-            let m = match[2] ? parseInt(match[2]) : 0;
-            const period = match[3] ? match[3].toLowerCase() : '';
-
-            // Penyesuaian format 12-jam (pagi/siang/sore/malam)
-            if ((period === 'siang' || period === 'sore' || period === 'malam') && h < 12) {
-                h += 12;
-            } else if (period === 'pagi' && h === 12) {
-                h = 0;
-            }
-
-            hours = h;
-            minutes = m;
-
-            // Hapus klausa waktu dari teks judul
-            workingText = workingText.replace(match[0], '');
-        }
-
-        // C. Clean up Judul
-        let title = workingText.replace(/\s+/g, ' ').trim();
-        if (!title) title = "Agenda Tanpa Judul";
-        title = title.charAt(0).toUpperCase() + title.slice(1);
-
-        // Standardize output date
-        const formattedDate = eventDate.toISOString().split('T')[0];
-        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-
-        return {
-            title: title,
-            date: formattedDate,
-            time: formattedTime,
-            duration: config.defaultDuration + ' Menit',
-            reminder: config.defaultReminder == '0' ? 'Tanpa Pengingat' : config.defaultReminder + ' Menit Sebelum',
-            meta: {
-                isDateDetected,
-                isTimeDetected
-            }
-        };
-    }
-
-    /* ================= 3. UI HANDLERS & RENDERING ================= */
-    function handleInput(text, context) {
-        const parsed = parseNaturalLanguage(text);
-        const chipsContainer = document.getElementById(context === 'main' ? 'mainChips' : 'sandboxChips');
-        
-        if (!parsed) {
-            chipsContainer.innerHTML = '';
-            if (context === 'sandbox') {
-                document.getElementById('sandboxJson').innerText = '// Hasil ekstraksi objek JSON sistem akan tampil di sini...';
-            }
-            return;
-        }
-
-        // Render UI Chips
-        chipsContainer.innerHTML = `
-            <span class="chip">📌 ${parsed.title}</span>
-            <span class="chip ${parsed.meta.isDateDetected ? '' : 'chip-default'}">
-                📅 ${parsed.date} ${parsed.meta.isDateDetected ? '' : '(Default)'}
-            </span>
-            <span class="chip ${parsed.meta.isTimeDetected ? '' : 'chip-default'}">
-                ⏰ ${parsed.time} ${parsed.meta.isTimeDetected ? '' : '(Default Config)'}
-            </span>
-            <span class="chip chip-default">⏳ ${parsed.duration}</span>
-            <span class="chip chip-default">🔔 ${parsed.reminder}</span>
-        `;
-
-        // Output JSON Khusus untuk Sandbox Pengaturan
-        if (context === 'sandbox') {
-            document.getElementById('sandboxJson').innerText = JSON.stringify(parsed, null, 2);
-        }
-    }
-
-    function addSchedule() {
-        const inputEl = document.getElementById('mainInput');
-        const parsed = parseNaturalLanguage(inputEl.value);
-
-        if (!parsed) {
-            alert('Silakan ketik jadwal terlebih dahulu!');
-            return;
-        }
-
-        schedules.push(parsed);
-        localStorage.setItem('smart_scheduler_events', JSON.stringify(schedules));
-
-        // Reset Form Input
-        inputEl.value = '';
-        document.getElementById('mainChips').innerHTML = '';
-        
-        renderSchedules();
-    }
-
-    function deleteSchedule(index) {
-        schedules.splice(index, 1);
-        localStorage.setItem('smart_scheduler_events', JSON.stringify(schedules));
-        renderSchedules();
-    }
-
-    function renderSchedules() {
-        const listEl = document.getElementById('scheduleList');
-        if (schedules.length === 0) {
-            listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Belum ada jadwal tersimpan.</p>';
-            return;
-        }
-
-        listEl.innerHTML = schedules.map((item, index) => `
-            <li class="schedule-item">
-                <div class="schedule-info">
-                    <h4>${item.title}</h4>
-                    <p>📅 ${item.date} | ⏰ ${item.time} WIB (${item.duration}) | 🔔 ${item.reminder}</p>
-                </div>
-                <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
-            </li>
-        `).join('');
-    }
-
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-        if (tabName === 'jadwal') {
-            document.getElementById('tab-jadwal').classList.add('active');
-            event.target.classList.add('active');
+function sendPushNotification(title, body, key) {
+      // Mencegah duplicate notification di menit/hari yang sama
+      if (triggeredNotifs[key]) return;
+      triggeredNotifs[key] = true;
+
+      if (Notification.permission === 'granted') {
+        if (swRegistration && swRegistration.showNotification) {
+          swRegistration.showNotification(title, {
+            body: body,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            vibrate: [200, 100, 200]
+          });
         } else {
-            document.getElementById('tab-pengaturan').classList.add('active');
-            event.target.classList.add('active');
+          new Notification(title, { body: body, icon: './icon-192.png' });
         }
+      }
     }
 
-    // Jalankan inisialisasi awal saat dokumen selesai dimuat
-    document.addEventListener('DOMContentLoaded', initApp);
-</script>
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        showToast('Browser Anda tidak mendukung notifikasi.');
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          showToast('Izin notifikasi berhasil diaktifkan!');
+        } else {
+          showToast('Izin notifikasi ditolak.');
+        }
+      });
+    }
 
-</body>
+    function checkNotificationTriggers() {
+      const now = new Date();
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${currentHours}:${currentMinutes}`;
+      const dayIndex = now.getDay(); // 0: Mingu, 1: Senin, dst.
+      const dateNum = now.getDate();
+      const dateStr = now.toISOString().slice(0, 10);
+
+      // 1. Pengingat 15 menit sebelum kelas (Simulasi: 06:45)
+      if (notifSettings.notif15MinBefore && timeStr === '06:45') {
+        sendPushNotification('⏰ Persiapan Mengajar', 'Jadwal mengajar pertama Anda akan dimulai 15 menit lagi.', `15min_${dateStr}`);
+      }
+
+      // 2. Backup Otomatis pukul 20:00
+      if (notifSettings.notifAutoBackup && timeStr === '20:00') {
+        sendPushNotification('💾 Backup Data', 'Sistem secara otomatis mengamankan jurnal harian Anda.', `backup_${dateStr}`);
+      }
+
+      // 3. Rekap Mingguan Hari Jumat pukul 15:00
+      if (notifSettings.notifWeeklyRecap && dayIndex === 5 && timeStr === '15:00') {
+        sendPushNotification('📅 Rekap Mingguan', 'Hari Jumat telah usai. Unduh laporan mingguan Anda sekarang.', `weekly_${dateStr}`);
+      }
+
+      // 4. Rekap Bulanan di Tanggal 28 Pukul 16:00
+      if (notifSettings.notifMonthlyRecap && dateNum >= 28 && timeStr === '16:00') {
+        sendPushNotification('📊 Rekap Bulanan', 'Akhir bulan sudah dekat! Pastikan seluruh jurnal telah terisi.', `monthly_${dateStr}`);
+      }
+    }
+
+    // --- NAVIGATION & UI NAVIGATION ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+
+      const bottomNav = document.getElementById('bottom-nav-bar');
+      if (screenId === 'auth-screen') {
+        bottomNav.style.display = 'none';
+      } else {
+        bottomNav.style.display = 'flex';
+      }
+
+      // Sync Navigation Buttons
+      const navButtons = document.querySelectorAll('.nav-button');
+      navButtons.forEach(btn => btn.classList.remove('active'));
+      if (screenId === 'home-screen') navButtons[0]?.classList.add('active');
+      if (screenId === 'reports-screen') navButtons[1]?.classList.add('active');
+      if (screenId === 'settings-screen') navButtons[2]?.classList.add('active');
+
+      if (screenId === 'home-screen') renderHomeScreen();
+      if (screenId === 'settings-screen') loadProfileInputs();
+      
+      window.scrollTo(0, 0);
+    }
+
+    function switchAuthTab(type) {
+      const loginBtn = document.getElementById('tab-login-btn');
+      const regBtn = document.getElementById('tab-register-btn');
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+
+      if (type === 'login') {
+        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
+        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
+        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    function handleAuth(type) {
+      if (type === 'register') {
+        const name = document.getElementById('reg-name').value;
+        const nip = document.getElementById('reg-nip').value;
+        profile.name = name || profile.name;
+        profile.nip = nip || profile.nip;
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+      }
+      localStorage.setItem('jg_is_logged_in', 'true');
+      showToast('Berhasil masuk ke akun!');
+      showScreen('home-screen');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('jg_is_logged_in');
+      showToast('Berhasil keluar.');
+      showScreen('auth-screen');
+    }
+
+    // --- CLOCK & DATE ENGINE ---
+    function initClock() {
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+      function update() {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('live-clock').textContent = `${hrs}:${mins}`;
+        document.getElementById('live-day').textContent = days[now.getDay()];
+        document.getElementById('live-date').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    function onDateChange() {
+      selectedDate = document.getElementById('journal-date-picker').value;
+      renderHomeScreen();
+    }
+
+    // --- HOME SCREEN RENDER ---
+    function getDayNameFromDate(dateStr) {
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const d = new Date(dateStr);
+      return days[d.getDay()];
+    }
+
+    function renderHomeScreen() {
+      // Set Header Nama Guru
+      document.getElementById('teacher-name-home').textContent = profile.name || 'Guru Pengajar';
+      
+      const dayName = getDayNameFromDate(selectedDate);
+      document.getElementById('selected-day-badge').textContent = dayName;
+
+      // Filter Jadwal berdasarkan Hari
+      const todaySchedules = schedules.filter(s => s.day.toLowerCase() === dayName.toLowerCase());
+      const scheduleContainer = document.getElementById('home-schedule-list');
+      scheduleContainer.innerHTML = '';
+
+      if (todaySchedules.length === 0) {
+        scheduleContainer.innerHTML = `
+          <div class="native-card p-4 text-center text-xs text-slate-500">
+            <i data-lucide="coffee" class="mx-auto mb-2 text-slate-400" width="24"></i>
+            Tidak ada jadwal mengajar pada hari ${dayName}.
+          </div>`;
+      } else {
+        todaySchedules.forEach(sch => {
+          // Cek apakah jurnal sudah terisi
+          const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === sch.id);
+          const isDone = !!existing;
+
+          const card = document.createElement('div');
+          card.className = 'native-card p-4 flex items-center justify-between';
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">${sch.time}</span>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">${sch.class}</span>
+              </div>
+              <p class="font-bold text-xs">${sch.subject}</p>
+              <p class="text-[11px] text-slate-500">${sch.room}</p>
+            </div>
+            <button onclick="openJournalForm('${sch.id}')" class="${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-600 text-white'} px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
+              <i data-lucide="${isDone ? 'check-circle' : 'edit-3'}" width="14"></i>
+              <span>${isDone ? 'Edit Jurnal' : 'Isi Jurnal'}</span>
+            </button>
+          `;
+          scheduleContainer.appendChild(card);
+        });
+      }
+
+      // Render Riwayat
+      renderHistoryList();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderHistoryList() {
+      const historyContainer = document.getElementById('home-history-list');
+      historyContainer.innerHTML = '';
+
+      if (journalEntries.length === 0) {
+        historyContainer.innerHTML = `
+          <div class="native-card p-4 text-center text-xs text-slate-400">
+            Belum ada riwayat jurnal yang diisi.
+          </div>`;
+        return;
+      }
+
+      // Urutkan riwayat dari yang terbaru
+      const sorted = [...journalEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.slice(0, 5).forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'native-card p-3 flex items-start gap-3';
+        item.innerHTML = `
+          <div class="p-2 bg-blue-50 dark:bg-blue-900/40 text-blue-600 rounded-xl shrink-0">
+            <i data-lucide="book-open" width="18"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-xs truncate">${entry.className} - ${entry.subject}</h4>
+              <span class="text-[10px] text-slate-400 shrink-0">${entry.date}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${entry.topic}</p>
+            <div class="mt-1 flex items-center gap-2 text-[10px] text-emerald-600 font-medium">
+              <span>Hadir: ${entry.present}</span>
+              <span>•</span>
+              <span>Metode: ${entry.method}</span>
+            </div>
+          </div>
+        `;
+        historyContainer.appendChild(item);
+      });
+    }
+
+    // --- JOURNAL FORM LOGIC ---
+    function openJournalForm(scheduleId) {
+      activeScheduleIdForJournal = scheduleId;
+      const sch = schedules.find(s => s.id === scheduleId);
+      if (!sch) return;
+
+      document.getElementById('journal-class-title').textContent = `${sch.class} - ${sch.subject}`;
+      
+      // Isi dropdown mata pelajaran
+      const subjSelect = document.getElementById('journal-subject-select');
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s}" ${s === sch.subject ? 'selected' : ''}>${s}</option>`).join('');
+
+      // Cek apakah data sudah ada
+      const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === scheduleId);
+      const targetClass = classes.find(c => c.name === sch.class);
+      const totalStudents = targetClass ? targetClass.count : 30;
+
+      if (existing) {
+        document.getElementById('att-present').value = existing.present;
+        document.getElementById('att-sick').value = existing.sick;
+        document.getElementById('att-permission').value = existing.permission;
+        document.getElementById('att-absent').value = existing.absent;
+        document.getElementById('journal-method-select').value = existing.method;
+        document.getElementById('journal-condition-select').value = existing.condition;
+        document.getElementById('journal-topic').value = existing.topic;
+        document.getElementById('journal-notes').value = existing.notes || '';
+        
+        if (existing.photo) {
+          currentPhotoBase64 = existing.photo;
+          document.getElementById('photo-preview-img').src = existing.photo;
+          document.getElementById('photo-preview-box').classList.remove('hidden');
+        } else {
+          removePhoto();
+        }
+      } else {
+        document.getElementById('att-present').value = totalStudents;
+        document.getElementById('att-sick').value = 0;
+        document.getElementById('att-permission').value = 0;
+        document.getElementById('att-absent').value = 0;
+        document.getElementById('journal-topic').value = '';
+        document.getElementById('journal-notes').value = '';
+        removePhoto();
+      }
+
+      showScreen('journal-screen');
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        currentPhotoBase64 = e.target.result;
+        document.getElementById('photo-preview-img').src = currentPhotoBase64;
+        document.getElementById('photo-preview-box').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePhoto() {
+      currentPhotoBase64 = null;
+      document.getElementById('photo-preview-img').src = '';
+      document.getElementById('photo-preview-box').classList.add('hidden');
+    }
+
+    function generateAISummary() {
+      const subject = document.getElementById('journal-subject-select').value;
+      const method = document.getElementById('journal-method-select').value;
+
+      const templates = [
+        `Penyampaian materi pokok ${subject} melalui metode ${method}. Siswa diajak berdiskusi aktif serta menyelesaikan studi kasus interaktif secara berkelompok.`,
+        `Pembahasan konsep dasar ${subject}. Kegiatan dilanjutkan dengan latihan praktik menggunakan metode ${method} serta evaluasi hasil belajar di akhir sesi.`,
+        `Pendalaman materi ${subject} dikombinasikan dengan metode ${method}. Peserta didik mampu memahami indikator ketercapaian materi dengan antusias.`
+      ];
+
+      const randomIndex = Math.floor(Math.random() * templates.length);
+      document.getElementById('journal-topic').value = templates[randomIndex];
+      showToast('Ringkasan AI berhasil dibuat!');
+    }
+
+    function saveJournalEntry() {
+      const sch = schedules.find(s => s.id === activeScheduleIdForJournal);
+      if (!sch) return;
+
+      const present = parseInt(document.getElementById('att-present').value) || 0;
+      const sick = parseInt(document.getElementById('att-sick').value) || 0;
+      const permission = parseInt(document.getElementById('att-permission').value) || 0;
+      const absent = parseInt(document.getElementById('att-absent').value) || 0;
+
+      const entryData = {
+        date: selectedDate,
+        dayName: getDayNameFromDate(selectedDate).toUpperCase(),
+        scheduleId: activeScheduleIdForJournal,
+        className: sch.class,
+        studentCount: present + sick + permission + absent,
+        subject: document.getElementById('journal-subject-select').value,
+        present, sick, permission, absent,
+        method: document.getElementById('journal-method-select').value,
+        condition: document.getElementById('journal-condition-select').value,
+        topic: document.getElementById('journal-topic').value,
+        notes: document.getElementById('journal-notes').value,
+        photo: currentPhotoBase64
+      };
+
+      const existingIndex = journalEntries.findIndex(j => j.date === selectedDate && j.scheduleId === activeScheduleIdForJournal);
+      if (existingIndex > -1) {
+        journalEntries[existingIndex] = entryData;
+      } else {
+        journalEntries.push(entryData);
+      }
+
+      localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
+      showToast('Jurnal berhasil disimpan!');
+      showScreen('home-screen');
+    }
+
+    // --- CANVAS SIGNATURE (PARAF GURU) ---
+    let sigCanvas, sigCtx, isDrawing = false;
+
+    function initSignatureCanvas() {
+      sigCanvas = document.getElementById('sig-canvas');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+
+      function getPos(e) {
+        const rect = sigCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function startDraw(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(pos.x, pos.y);
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        sigCtx.lineTo(pos.x, pos.y);
+        sigCtx.strokeStyle = '#0e4a9d';
+        sigCtx.lineWidth = 2.5;
+        sigCtx.lineCap = 'round';
+        sigCtx.stroke();
+      }
+
+      function stopDraw() { isDrawing = false; }
+
+      sigCanvas.addEventListener('mousedown', startDraw);
+      sigCanvas.addEventListener('mousemove', draw);
+      sigCanvas.addEventListener('mouseup', stopDraw);
+      sigCanvas.addEventListener('touchstart', startDraw);
+      sigCanvas.addEventListener('touchmove', draw);
+      sigCanvas.addEventListener('touchend', stopDraw);
+
+      if (profile.signature) {
+        const img = new Image();
+        img.onload = () => sigCtx.drawImage(img, 0, 0);
+        img.src = profile.signature;
+      }
+    }
+
+    function clearSignature() {
+      if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      profile.signature = null;
+      localStorage.setItem('jg_profile', JSON.stringify(profile));
+      showToast('Paraf dibersihkan.');
+    }
+
+    function saveSignature() {
+      if (sigCanvas) {
+        profile.signature = sigCanvas.toDataURL();
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+        showToast('Paraf berhasil disimpan!');
+      }
+    }
+
+    // --- SETTINGS & PROFILE MANAGEMENT ---
+    function loadProfileInputs() {
+      document.getElementById('set-teacher-name').value = profile.name || '';
+      document.getElementById('set-teacher-nip').value = profile.nip || '';
+      document.getElementById('set-teacher-school').value = profile.school || '';
+      
+      const isLocked = profile.isLocked;
+      document.getElementById('set-teacher-name').disabled = isLocked;
+      document.getElementById('set-teacher-nip').disabled = isLocked;
+      document.getElementById('set-teacher-school').disabled = isLocked;
+      document.getElementById('lock-status-text').textContent = isLocked ? 'Buka Kunci' : 'Kunci Profil';
+    }
+
+    function toggleLockProfile() {
+      profile.isLocked = !profile.isLocked;
+      localStorage.setItem('jg_profile', JSON.stringify(profile));
+      loadProfileInputs();
+      showToast(profile.isLocked ? 'Profil dikunci.' : 'Profil dapat diubah.');
+    }
+
+    function saveProfileSettings() {
+      profile.name = document.getElementById('set-teacher-name').value;
+      profile.nip = document.getElementById('set-teacher-nip').value;
+      profile.school = document.getElementById('set-teacher-school').value;
+      localStorage.setItem('jg_profile', JSON.stringify(profile));
+      showToast('Perubahan profil tersimpan!');
+    }
+
+    function loadNotifSettingsUI() {
+      document.getElementById('notif-15min-before').checked = notifSettings.notif15MinBefore;
+      document.getElementById('notif-after-class').checked = notifSettings.notifAfterClass;
+      document.getElementById('notif-auto-backup').checked = notifSettings.notifAutoBackup;
+      document.getElementById('notif-weekly-recap').checked = notifSettings.notifWeeklyRecap;
+      document.getElementById('notif-monthly-recap').checked = notifSettings.notifMonthlyRecap;
+      document.getElementById('notif-incomplete-journal').checked = notifSettings.notifIncompleteJournal;
+      document.getElementById('notif-missing-photo').checked = notifSettings.notifMissingPhoto;
+    }
+
+    function saveNotifSettings() {
+      notifSettings = {
+        notif15MinBefore: document.getElementById('notif-15min-before').checked,
+        notifAfterClass: document.getElementById('notif-after-class').checked,
+        notifAutoBackup: document.getElementById('notif-auto-backup').checked,
+        notifWeeklyRecap: document.getElementById('notif-weekly-recap').checked,
+        notifMonthlyRecap: document.getElementById('notif-monthly-recap').checked,
+        notifIncompleteJournal: document.getElementById('notif-incomplete-journal').checked,
+        notifMissingPhoto: document.getElementById('notif-missing-photo').checked
+      };
+      localStorage.setItem('jg_notif_settings', JSON.stringify(notifSettings));
+      showToast('Pengaturan notifikasi diperbarui.');
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      showToast('Tema aplikasi diubah.');
+    }
+
+    // --- GOOGLE DRIVE SIMULATION ---
+    function selectDriveFolder() {
+      const folder = prompt('Masukkan nama folder Google Drive:', driveConfig.folderName);
+      if (folder) {
+        driveConfig.folderName = folder;
+        document.getElementById('gdrive-folder-name').value = folder;
+        localStorage.setItem('jg_drive_config', JSON.stringify(driveConfig));
+        showToast('Folder Google Drive diset.');
+      }
+    }
+
+    function syncToGoogleDrive() {
+      showToast('Menghubungkan ke Google Drive...');
+      setTimeout(() => {
+        showToast('Sinkronisasi sukses! Laporan tersimpan di Drive.');
+      }, 1500);
+    }
+
+    // --- PDF GENERATION ENGINE ---
+    function generatePDF(type) {
+      if (!window.jspdf) {
+        showToast('Library PDF belum terluat sempurna.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // Title & Header
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`JURNAL MENGAJAR GURU - ${type.toUpperCase()}`, 14, 15);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nama Guru : ${profile.name}`, 14, 22);
+      doc.text(`NIP / NUPTK: ${profile.nip}`, 14, 27);
+      doc.text(`Sekolah   : ${profile.school}`, 14, 32);
+
+      // Construct Table Data
+      const headers = [['No', 'Tanggal', 'Kelas', 'Mata Pelajaran', 'Kehadiran (H/S/I/A)', 'Metode', 'Kondisi', 'Materi / Pokok Bahasan', 'Paraf Guru']];
+      const rows = journalEntries.map((j, idx) => [
+        idx + 1,
+        `${j.dayName}, ${j.date}`,
+        j.className,
+        j.subject,
+        `${j.present}/${j.sick}/${j.permission}/${j.absent}`,
+        j.method,
+        j.condition,
+        j.topic,
+        '' // Slot untuk gambar Paraf
+      ]);
+
+      doc.autoTable({
+        startY: 37,
+        head: headers,
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [23, 105, 209], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 28 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 25 },
+          7: { cellWidth: 60 },
+          8: { cellWidth: 25 }
+        },
+        didDrawCell: function(data) {
+          // Sisipkan Gambar Paraf jika ada di kolom terakhir
+          if (data.column.index === 8 && data.cell.section === 'body') {
+            if (profile.signature) {
+              const dim = data.cell;
+              doc.addImage(profile.signature, 'PNG', dim.x + 2, dim.y + 1, 20, 8);
+            }
+          }
+        }
+      });
+
+      // Download PDF
+      doc.save(`Jurnal_Mengajar_${type}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      showToast('PDF Laporan berhasil diunduh!');
+    }
+
+    // --- TOAST NOTIFICATION UTILITY ---
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+ </body>
 </html>

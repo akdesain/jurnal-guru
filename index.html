@@ -13,7 +13,6 @@
   <!-- External Styles & Libraries -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- jsPDF & AutoTable for PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -57,8 +56,11 @@
       width: 100%; min-height: 100vh; max-width: 620px;
       margin: 0 auto; padding-bottom: 90px; overflow-x: hidden;
     }
-    .screen { display: none; animation: rise .2s ease both; }
-    .screen.active { display: block; }
+    /* Sembunyikan semua screen secara bawaan */
+    .screen { display: none !important; }
+    /* Hanya tampilkan screen yang memiliki class active */
+    .screen.active { display: block !important; animation: rise .2s ease both; }
+    
     .top-safe { padding-top: max(1.2rem, env(safe-area-inset-top)); }
     .native-card {
       border: 1px solid var(--line); border-radius: 20px;
@@ -77,25 +79,25 @@
     .primary-button {
       width: 100%; padding: .85rem; border: 0; border-radius: 14px;
       background: var(--blue); color: #fff; font-weight: 700;
-      box-shadow: 0 8px 20px rgba(23,105,209,.25);
+      box-shadow: 0 8px 20px rgba(23,105,209,.25); cursor: pointer;
     }
     .soft-button {
       border: 1px solid var(--line); border-radius: 12px;
-      background: var(--blue-soft); color: var(--blue-deep); font-weight: 700;
+      background: var(--blue-soft); color: var(--blue-deep); font-weight: 700; cursor: pointer;
     }
     .icon-button {
       border: 1px solid var(--line); border-radius: 12px;
-      background: var(--surface); color: var(--blue-deep); padding: .6rem;
+      background: var(--surface); color: var(--blue-deep); padding: .6rem; cursor: pointer;
     }
     .bottom-nav {
       position: fixed; z-index: 30; bottom: 0; left: 50%;
-      display: flex; width: min(100%, 620px); justify-content: space-around;
+      display: none; width: min(100%, 620px); justify-content: space-around;
       transform: translateX(-50%); padding: .5rem .8rem calc(.5rem + env(safe-area-inset-bottom));
       border-top: 1px solid var(--line); background: var(--nav); backdrop-filter: blur(16px);
     }
     .nav-button {
       min-width: 58px; border-radius: 12px; padding: .4rem;
-      color: var(--muted); font-size: .68rem; font-weight: 700; text-align: center;
+      color: var(--muted); font-size: .68rem; font-weight: 700; text-align: center; cursor: pointer;
     }
     .nav-button.active { background: var(--blue-soft); color: var(--blue-deep); }
     .toast {
@@ -103,7 +105,7 @@
       width: min(calc(100% - 32px),520px); transform: translate(-50%,-160%);
       border-radius: 14px; padding: .8rem 1rem; background: #0d2747; color: #fff;
       box-shadow: 0 16px 32px rgba(0,0,0,.25); font-size: .85rem; font-weight: 600;
-      transition: transform .28s ease; text-align: center;
+      transition: transform .28s ease; text-align: center; pointer-events: none;
     }
     .toast.show { transform: translate(-50%,0); }
     @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -114,30 +116,54 @@
    <div id="toast" class="toast"></div>
    
    <main>
-    <!-- 1. LAYAR LOGIN -->
-    <section id="auth-screen" class="screen active top-safe px-4 pb-5 flex flex-col justify-center min-h-[85vh]">
+    <!-- 1. HALAMAN LOGIN & REGISTER (AKAN HILANG SEPENUHNYA JIKA SUDAH LOGIN) -->
+    <section id="auth-screen" class="screen top-safe px-4 pb-5 flex flex-col justify-center min-h-[85vh]">
       <div class="text-center mb-6">
         <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-3xl mx-auto flex items-center justify-center mb-3">
           <i data-lucide="graduation-cap" width="36"></i>
         </div>
         <h1 class="text-2xl font-bold">Jurnal Guru Digital</h1>
-        <p class="text-xs text-slate-500 mt-1">Masuk untuk mengelola jurnal harian Anda</p>
+        <p class="text-xs text-slate-500 mt-1">Masuk atau Daftar akun baru untuk memulai</p>
       </div>
 
-      <form id="login-form" class="native-card p-5 space-y-4" onsubmit="event.preventDefault(); handleLogin();">
+      <!-- Tab Switcher Login / Register -->
+      <div class="flex bg-slate-200/60 dark:bg-slate-800 p-1 rounded-xl mb-4">
+        <button type="button" id="tab-login-btn" class="w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm" onclick="switchAuthTab('login')">Masuk</button>
+        <button type="button" id="tab-register-btn" class="w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500" onclick="switchAuthTab('register')">Daftar Akun</button>
+      </div>
+
+      <!-- Form Login -->
+      <form id="login-form" class="native-card p-5 space-y-4" onsubmit="event.preventDefault(); handleAuth('login');">
         <div>
           <label class="block text-xs font-bold mb-1">Email / NIP</label>
-          <input id="login-user" class="form-control" type="text" placeholder="Masukkan NIP atau Email" required>
+          <input id="login-user" class="form-control text-xs" type="text" placeholder="Masukkan NIP atau Email" required>
         </div>
         <div>
           <label class="block text-xs font-bold mb-1">Kata Sandi</label>
-          <input id="login-pass" class="form-control" type="password" placeholder="••••••••" required>
+          <input id="login-pass" class="form-control text-xs" type="password" placeholder="••••••••" required>
         </div>
-        <button type="submit" class="primary-button">Masuk ke Aplikasi</button>
+        <button type="submit" class="primary-button">Masuk ke Dashboard</button>
+      </form>
+
+      <!-- Form Register -->
+      <form id="register-form" class="native-card p-5 space-y-4 hidden" onsubmit="event.preventDefault(); handleAuth('register');">
+        <div>
+          <label class="block text-xs font-bold mb-1">Nama Lengkap & Gelar</label>
+          <input id="reg-name" class="form-control text-xs" type="text" placeholder="Contoh: Budi Santoso, S.Pd." required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1">NIP / NUPTK</label>
+          <input id="reg-nip" class="form-control text-xs" type="text" placeholder="Masukkan NIP" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1">Kata Sandi Baru</label>
+          <input id="reg-pass" class="form-control text-xs" type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="primary-button">Buat Akun & Masuk</button>
       </form>
     </section>
 
-    <!-- 2. LAYAR BERANDA (HOME / DASHBOARD) -->
+    <!-- 2. HALAMAN BERANDA / DASHBOARD -->
     <section id="home-screen" class="screen top-safe px-4 pb-5">
       <header class="mb-4 flex items-center justify-between">
         <div>
@@ -149,7 +175,7 @@
         </button>
       </header>
 
-      <!-- Card Jam & Tanggal HP -->
+      <!-- Jam & Tanggal HP -->
       <section class="hero-card mb-4 p-5">
         <div class="flex items-start justify-between gap-2">
           <div>
@@ -162,14 +188,13 @@
           </div>
         </div>
 
-        <!-- Picker Navigasi Tanggal (Bisa Mundur) -->
         <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs">
           <span class="font-medium">Pilih Tanggal Jurnal:</span>
           <input type="date" id="journal-date-picker" class="bg-white/20 text-white rounded-lg px-2 py-1 text-xs outline-none border border-white/30" onchange="onDateChange()">
         </div>
       </section>
 
-      <!-- Daftar Jadwal Hari Ini -->
+      <!-- Jadwal Mengajar -->
       <div class="mb-3 flex items-center justify-between">
         <h2 class="font-bold text-sm">Jadwal Mengajar Hari Ini</h2>
         <span id="selected-day-badge" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold">Senin</span>
@@ -178,7 +203,7 @@
       <div id="home-schedule-list" class="space-y-3"></div>
     </section>
 
-    <!-- 3. LAYAR INPUT JURNAL -->
+    <!-- 3. HALAMAN INPUT JURNAL -->
     <section id="journal-screen" class="screen top-safe px-4 pb-5">
       <header class="mb-4 flex items-center gap-3">
         <button type="button" class="icon-button" onclick="showScreen('home-screen')">
@@ -191,7 +216,6 @@
       </header>
 
       <form onsubmit="event.preventDefault(); saveJournalEntry();" class="space-y-4">
-        <!-- Kehadiran Siswa -->
         <div class="native-card p-4">
           <h2 class="font-bold mb-3 text-xs">Kehadiran Siswa</h2>
           <div class="grid grid-cols-2 gap-2 text-xs">
@@ -236,7 +260,7 @@
       </form>
     </section>
 
-    <!-- 4. LAYAR LAPORAN -->
+    <!-- 4. HALAMAN LAPORAN -->
     <section id="reports-screen" class="screen top-safe px-4 pb-5">
       <header class="mb-4">
         <p class="text-xs font-bold tracking-widest text-slate-400">DOKUMEN REKAP</p>
@@ -269,7 +293,6 @@
         <button type="button" class="primary-button py-2 text-xs bg-indigo-600 hover:bg-indigo-700" onclick="generatePDF('monthly')">Unduh PDF Bulanan</button>
       </div>
 
-      <!-- Google Drive Cloud Backup -->
       <div class="native-card p-4">
         <div class="flex items-center justify-between mb-2">
           <h3 class="font-bold text-xs">Penyimpanan Google Drive</h3>
@@ -280,7 +303,7 @@
       </div>
     </section>
 
-    <!-- 5. LAYAR PENGATURAN (SETTINGS) -->
+    <!-- 5. HALAMAN PENGATURAN (SETTINGS) -->
     <section id="settings-screen" class="screen top-safe px-4 pb-5 space-y-5">
       <header class="flex items-center justify-between">
         <div>
@@ -292,7 +315,7 @@
         </button>
       </header>
 
-      <!-- A. EDIT & KUNCI PROFIL GURU -->
+      <!-- Profil Guru -->
       <section class="native-card p-4">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-bold text-xs">Profil Pengajar</h2>
@@ -317,7 +340,7 @@
         </div>
       </section>
 
-      <!-- B. TANDA TANGAN GURU -->
+      <!-- TTD Canvas -->
       <section class="native-card p-4">
         <h2 class="font-bold text-xs mb-2">Tanda Tangan Guru (TTD)</h2>
         <p class="text-[11px] text-slate-500 mb-3">Gambar tanda tangan Anda di bawah ini untuk disertakan dalam dokumen PDF.</p>
@@ -330,7 +353,7 @@
         </div>
       </section>
 
-      <!-- C. PENGATURAN RUANG -->
+      <!-- Pengaturan Ruang -->
       <section class="native-card p-4">
         <h2 class="font-bold text-xs mb-3">Pengaturan Nama Ruang</h2>
         <div id="room-list" class="space-y-2 mb-3"></div>
@@ -340,7 +363,7 @@
         </form>
       </section>
 
-      <!-- D. PENGATURAN KELAS -->
+      <!-- Pengaturan Kelas -->
       <section class="native-card p-4">
         <h2 class="font-bold text-xs mb-3">Pengaturan Kelas & Jumlah Siswa</h2>
         <div id="class-list" class="space-y-2 mb-3"></div>
@@ -351,7 +374,7 @@
         </form>
       </section>
 
-      <!-- E. PENGATURAN MATA PELAJARAN -->
+      <!-- Pengaturan Mapel -->
       <section class="native-card p-4">
         <h2 class="font-bold text-xs mb-3">Pengaturan Mata Pelajaran</h2>
         <div id="subject-list" class="space-y-2 mb-3"></div>
@@ -361,7 +384,7 @@
         </form>
       </section>
 
-      <!-- F. JADWAL MENGAJAR (MAX 4 PER HARI) -->
+      <!-- Jadwal Mengajar -->
       <section class="native-card p-4">
         <div class="flex items-center justify-between mb-2">
           <h2 class="font-bold text-xs">Jadwal Mengajar Harian</h2>
@@ -393,7 +416,7 @@
         </form>
       </section>
 
-      <!-- G. NOTIFIKASI & TEMA GELAP -->
+      <!-- Pengaturan Lainnya -->
       <section class="native-card p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div>
@@ -418,8 +441,8 @@
     </section>
    </main>
 
-   <!-- NAVIGASI BAWAH (BOTTOM NAV) -->
-   <nav class="bottom-nav">
+   <!-- NAVIGASI BAWAH -->
+   <nav id="bottom-nav-bar" class="bottom-nav">
      <button class="nav-button active flex flex-col items-center gap-1" onclick="showScreen('home-screen')">
        <i data-lucide="home" width="18"></i>
        <span>Beranda</span>
@@ -435,7 +458,6 @@
    </nav>
   </div>
 
-  <!-- JAVASCRIPT SYSTEM ENGINE -->
   <script>
     // --- STATE MANAGEMENT ---
     let profile = JSON.parse(localStorage.getItem('jg_profile')) || {
@@ -464,33 +486,36 @@
     let selectedDate = new Date().toISOString().slice(0, 10);
     let activeScheduleIdForJournal = null;
 
-    // --- INITIALIZATION ---
+    // --- INISIALISASI SAAT PERTAMA KALI MEMBUKA APLIKASI ---
     document.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) lucide.createIcons();
       initClock();
       initSignatureCanvas();
       
-      // Auto Login Bypass Check
+      // PERIKSA STATUS LOGIN (AUTO-BYPASS HALAMAN AUTH)
       const isLoggedIn = localStorage.getItem('jg_is_logged_in');
       if (isLoggedIn === 'true') {
-        showScreen('home-screen');
+        showScreen('home-screen'); // Langsung buka Dashboard & sembunyikan Login
       } else {
-        showScreen('auth-screen');
+        showScreen('auth-screen'); // Tampilkan Login jika belum terautentikasi
       }
 
-      // Sync settings input fields
       document.getElementById('journal-date-picker').value = selectedDate;
       loadProfileInputs();
       renderAllSettingsUI();
     });
 
-    // --- NAVIGATION ENGINE ---
+    // --- SYSTEM NAVIGASI DAN SWITCH SCREEN ---
     function showScreen(screenId) {
+      // 1. Sembunyikan SEMUA halaman
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      
+      // 2. Tampilkan HANYA halaman yang dituju
       const target = document.getElementById(screenId);
       if (target) target.classList.add('active');
 
-      const navBar = document.querySelector('.bottom-nav');
+      // 3. Atur Visibilitas Navigasi Bawah
+      const navBar = document.getElementById('bottom-nav-bar');
       if (screenId === 'auth-screen') {
         if (navBar) navBar.style.display = 'none';
       } else {
@@ -498,6 +523,7 @@
         renderHomeScreen();
       }
 
+      // 4. Update status tombol aktif di navigasi bawah
       document.querySelectorAll('.nav-button').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(screenId));
       });
@@ -505,10 +531,43 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // --- AUTHENTICATION ---
-    function handleLogin() {
+    // --- TAB LOGIN & REGISTER ---
+    function switchAuthTab(type) {
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+      const loginBtn = document.getElementById('tab-login-btn');
+      const regBtn = document.getElementById('tab-register-btn');
+
+      if (type === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
+        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
+        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+      }
+    }
+
+    // --- MASUK & DAFTAR ---
+    function handleAuth(type) {
+      if (type === 'register') {
+        const nameVal = document.getElementById('reg-name').value.trim();
+        const nipVal = document.getElementById('reg-nip').value.trim();
+        if (nameVal) profile.name = nameVal;
+        if (nipVal) profile.nip = nipVal;
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+        showToast('Akun berhasil dibuat!');
+      } else {
+        showToast('Login berhasil!');
+      }
+
+      // SIMPAN STATUS LOGIN KE STORAGE
       localStorage.setItem('jg_is_logged_in', 'true');
-      showToast('Login berhasil!');
+      
+      // SEKERAS-KERASNYA PINDAH KE DASHBOARD BERANDA (HALAMAN AUTH OTOMATIS HILANG)
       showScreen('home-screen');
     }
 
@@ -518,7 +577,7 @@
       showScreen('auth-screen');
     }
 
-    // --- CLOCK & BERANDA ---
+    // --- JAM & TANGGAL REAL-TIME ---
     function initClock() {
       const update = () => {
         const now = new Date();
@@ -557,7 +616,6 @@
       const badge = document.getElementById('selected-day-badge');
       if (badge) badge.textContent = dayName;
 
-      // Filter schedule for this day
       const daySchedules = schedules.filter(s => s.day === dayName);
       const listContainer = document.getElementById('home-schedule-list');
       if (!listContainer) return;
@@ -569,7 +627,6 @@
 
       listContainer.innerHTML = '';
       daySchedules.forEach(item => {
-        // Check if journal exists for this schedule & date
         const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === item.id);
         const card = document.createElement('div');
         card.className = 'native-card p-4 flex items-center justify-between';
@@ -591,7 +648,7 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // --- JURNAL ENTRY ---
+    // --- FORM JURNAL ---
     function openJournalForm(scheduleId) {
       activeScheduleIdForJournal = scheduleId;
       const sched = schedules.find(s => s.id === scheduleId);
@@ -599,7 +656,6 @@
 
       document.getElementById('journal-class-title').textContent = `${sched.class} (${selectedDate})`;
       
-      // Sync subject dropdown
       const subSelect = document.getElementById('journal-subject-select');
       subSelect.innerHTML = '';
       subjects.forEach(s => {
@@ -610,7 +666,6 @@
         subSelect.appendChild(opt);
       });
 
-      // Load existing if available
       const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === scheduleId);
       if (existing) {
         document.getElementById('att-present').value = existing.present;
@@ -646,7 +701,6 @@
         notes: document.getElementById('journal-notes').value
       };
 
-      // Remove previous entry if editing
       journalEntries = journalEntries.filter(j => !(j.date === selectedDate && j.scheduleId === activeScheduleIdForJournal));
       journalEntries.push(entry);
       localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
@@ -655,7 +709,7 @@
       showScreen('home-screen');
     }
 
-    // --- SETTINGS MANAGEMENT ---
+    // --- PENGATURAN PROFIL & KUNCI ---
     function loadProfileInputs() {
       document.getElementById('set-teacher-name').value = profile.name;
       document.getElementById('set-teacher-nip').value = profile.nip;
@@ -691,7 +745,7 @@
       renderHomeScreen();
     }
 
-    // --- SIGNATURE CANVAS ENGINE ---
+    // --- CANVAS TANDA TANGAN (TTD) ---
     let sigCanvas, sigCtx, isDrawing = false;
     function initSignatureCanvas() {
       sigCanvas = document.getElementById('sig-canvas');
@@ -718,7 +772,6 @@
       sigCanvas.addEventListener('touchmove', move);
       sigCanvas.addEventListener('touchend', stop);
 
-      // Load existing signature if stored
       if (profile.signature) {
         const img = new Image();
         img.onload = () => sigCtx.drawImage(img, 0, 0);
@@ -741,7 +794,7 @@
       showToast('Tanda tangan disimpan');
     }
 
-    // --- ROOMS, CLASSES, SUBJECTS UI ---
+    // --- DYNAMIC DATA MANAGEMENT ---
     function renderAllSettingsUI() {
       renderRoomsUI();
       renderClassesUI();
@@ -841,7 +894,7 @@
       renderScheduleSettings();
     }
 
-    // --- SCHEDULE MANAGEMENT (MAX 4 / DAY) ---
+    // --- PENGATURAN JADWAL (MAKSIMAL 4 PER HARI) ---
     function renderScheduleSettings() {
       const selectedDay = document.getElementById('schedule-day-select').value;
       const daySchedules = schedules.filter(s => s.day === selectedDay);
@@ -859,7 +912,6 @@
         `).join('');
       }
 
-      // Sync dropdown selections for schedule creation
       const classSelect = document.getElementById('sched-class-select');
       const roomSelect = document.getElementById('sched-room-select');
       const subSelect = document.getElementById('sched-subject-select');
@@ -902,7 +954,7 @@
       showToast('Jadwal dihapus');
     }
 
-    // --- PDF GENERATOR (WEEKLY & MONTHLY) ---
+    // --- CETAK LAPORAN PDF ---
     function generatePDF(type) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -928,7 +980,6 @@
         body: tableData.length > 0 ? tableData : [['-', '-', 'Belum ada data jurnal', '-', '-']],
       });
 
-      // Attach Signature if available
       if (profile.signature) {
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.text('Tanda Tangan Guru:', 140, finalY);
@@ -946,7 +997,7 @@
       }, 1500);
     }
 
-    // --- NOTIFICATIONS & THEME ---
+    // --- NOTIFIKASI & TEMA ---
     function requestNotificationPermission() {
       if (!('Notification' in window)) {
         showToast('Browser/HP tidak mendukung notifikasi');

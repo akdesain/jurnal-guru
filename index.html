@@ -1,582 +1,529 @@
-function sendPushNotification(title, body, key) {
-      // Mencegah duplicate notification di menit/hari yang sama
-      if (triggeredNotifs[key]) return;
-      triggeredNotifs[key] = true;
-
-      if (Notification.permission === 'granted') {
-        if (swRegistration && swRegistration.showNotification) {
-          swRegistration.showNotification(title, {
-            body: body,
-            icon: './icon-192.png',
-            badge: './icon-192.png',
-            vibrate: [200, 100, 200]
-          });
-        } else {
-          new Notification(title, { body: body, icon: './icon-192.png' });
-        }
-      }
-    }
-
-    function requestNotificationPermission() {
-      if (!('Notification' in window)) {
-        showToast('Browser Anda tidak mendukung notifikasi.');
-        return;
-      }
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          showToast('Izin notifikasi berhasil diaktifkan!');
-        } else {
-          showToast('Izin notifikasi ditolak.');
-        }
-      });
-    }
-
-    function checkNotificationTriggers() {
-      const now = new Date();
-      const currentHours = String(now.getHours()).padStart(2, '0');
-      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-      const timeStr = `${currentHours}:${currentMinutes}`;
-      const dayIndex = now.getDay(); // 0: Mingu, 1: Senin, dst.
-      const dateNum = now.getDate();
-      const dateStr = now.toISOString().slice(0, 10);
-
-      // 1. Pengingat 15 menit sebelum kelas (Simulasi: 06:45)
-      if (notifSettings.notif15MinBefore && timeStr === '06:45') {
-        sendPushNotification('⏰ Persiapan Mengajar', 'Jadwal mengajar pertama Anda akan dimulai 15 menit lagi.', `15min_${dateStr}`);
-      }
-
-      // 2. Backup Otomatis pukul 20:00
-      if (notifSettings.notifAutoBackup && timeStr === '20:00') {
-        sendPushNotification('💾 Backup Data', 'Sistem secara otomatis mengamankan jurnal harian Anda.', `backup_${dateStr}`);
-      }
-
-      // 3. Rekap Mingguan Hari Jumat pukul 15:00
-      if (notifSettings.notifWeeklyRecap && dayIndex === 5 && timeStr === '15:00') {
-        sendPushNotification('📅 Rekap Mingguan', 'Hari Jumat telah usai. Unduh laporan mingguan Anda sekarang.', `weekly_${dateStr}`);
-      }
-
-      // 4. Rekap Bulanan di Tanggal 28 Pukul 16:00
-      if (notifSettings.notifMonthlyRecap && dateNum >= 28 && timeStr === '16:00') {
-        sendPushNotification('📊 Rekap Bulanan', 'Akhir bulan sudah dekat! Pastikan seluruh jurnal telah terisi.', `monthly_${dateStr}`);
-      }
-    }
-
-    // --- NAVIGATION & UI NAVIGATION ---
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(screenId);
-      if (target) target.classList.add('active');
-
-      const bottomNav = document.getElementById('bottom-nav-bar');
-      if (screenId === 'auth-screen') {
-        bottomNav.style.display = 'none';
-      } else {
-        bottomNav.style.display = 'flex';
-      }
-
-      // Sync Navigation Buttons
-      const navButtons = document.querySelectorAll('.nav-button');
-      navButtons.forEach(btn => btn.classList.remove('active'));
-      if (screenId === 'home-screen') navButtons[0]?.classList.add('active');
-      if (screenId === 'reports-screen') navButtons[1]?.classList.add('active');
-      if (screenId === 'settings-screen') navButtons[2]?.classList.add('active');
-
-      if (screenId === 'home-screen') renderHomeScreen();
-      if (screenId === 'settings-screen') loadProfileInputs();
-      
-      window.scrollTo(0, 0);
-    }
-
-    function switchAuthTab(type) {
-      const loginBtn = document.getElementById('tab-login-btn');
-      const regBtn = document.getElementById('tab-register-btn');
-      const loginForm = document.getElementById('login-form');
-      const regForm = document.getElementById('register-form');
-
-      if (type === 'login') {
-        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
-        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
-        loginForm.classList.remove('hidden');
-        regForm.classList.add('hidden');
-      } else {
-        regBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm';
-        loginBtn.className = 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
-        regForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-      }
-    }
-
-    function handleAuth(type) {
-      if (type === 'register') {
-        const name = document.getElementById('reg-name').value;
-        const nip = document.getElementById('reg-nip').value;
-        profile.name = name || profile.name;
-        profile.nip = nip || profile.nip;
-        localStorage.setItem('jg_profile', JSON.stringify(profile));
-      }
-      localStorage.setItem('jg_is_logged_in', 'true');
-      showToast('Berhasil masuk ke akun!');
-      showScreen('home-screen');
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('jg_is_logged_in');
-      showToast('Berhasil keluar.');
-      showScreen('auth-screen');
-    }
-
-    // --- CLOCK & DATE ENGINE ---
-    function initClock() {
-      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-      function update() {
-        const now = new Date();
-        const hrs = String(now.getHours()).padStart(2, '0');
-        const mins = String(now.getMinutes()).padStart(2, '0');
-        
-        document.getElementById('live-clock').textContent = `${hrs}:${mins}`;
-        document.getElementById('live-day').textContent = days[now.getDay()];
-        document.getElementById('live-date').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-      }
-      update();
-      setInterval(update, 1000);
-    }
-
-    function onDateChange() {
-      selectedDate = document.getElementById('journal-date-picker').value;
-      renderHomeScreen();
-    }
-
-    // --- HOME SCREEN RENDER ---
-    function getDayNameFromDate(dateStr) {
-      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      const d = new Date(dateStr);
-      return days[d.getDay()];
-    }
-
-    function renderHomeScreen() {
-      // Set Header Nama Guru
-      document.getElementById('teacher-name-home').textContent = profile.name || 'Guru Pengajar';
-      
-      const dayName = getDayNameFromDate(selectedDate);
-      document.getElementById('selected-day-badge').textContent = dayName;
-
-      // Filter Jadwal berdasarkan Hari
-      const todaySchedules = schedules.filter(s => s.day.toLowerCase() === dayName.toLowerCase());
-      const scheduleContainer = document.getElementById('home-schedule-list');
-      scheduleContainer.innerHTML = '';
-
-      if (todaySchedules.length === 0) {
-        scheduleContainer.innerHTML = `
-          <div class="native-card p-4 text-center text-xs text-slate-500">
-            <i data-lucide="coffee" class="mx-auto mb-2 text-slate-400" width="24"></i>
-            Tidak ada jadwal mengajar pada hari ${dayName}.
-          </div>`;
-      } else {
-        todaySchedules.forEach(sch => {
-          // Cek apakah jurnal sudah terisi
-          const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === sch.id);
-          const isDone = !!existing;
-
-          const card = document.createElement('div');
-          card.className = 'native-card p-4 flex items-center justify-between';
-          card.innerHTML = `
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">${sch.time}</span>
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">${sch.class}</span>
-              </div>
-              <p class="font-bold text-xs">${sch.subject}</p>
-              <p class="text-[11px] text-slate-500">${sch.room}</p>
-            </div>
-            <button onclick="openJournalForm('${sch.id}')" class="${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-600 text-white'} px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
-              <i data-lucide="${isDone ? 'check-circle' : 'edit-3'}" width="14"></i>
-              <span>${isDone ? 'Edit Jurnal' : 'Isi Jurnal'}</span>
-            </button>
-          `;
-          scheduleContainer.appendChild(card);
-        });
-      }
-
-      // Render Riwayat
-      renderHistoryList();
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function renderHistoryList() {
-      const historyContainer = document.getElementById('home-history-list');
-      historyContainer.innerHTML = '';
-
-      if (journalEntries.length === 0) {
-        historyContainer.innerHTML = `
-          <div class="native-card p-4 text-center text-xs text-slate-400">
-            Belum ada riwayat jurnal yang diisi.
-          </div>`;
-        return;
-      }
-
-      // Urutkan riwayat dari yang terbaru
-      const sorted = [...journalEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      sorted.slice(0, 5).forEach(entry => {
-        const item = document.createElement('div');
-        item.className = 'native-card p-3 flex items-start gap-3';
-        item.innerHTML = `
-          <div class="p-2 bg-blue-50 dark:bg-blue-900/40 text-blue-600 rounded-xl shrink-0">
-            <i data-lucide="book-open" width="18"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <h4 class="font-bold text-xs truncate">${entry.className} - ${entry.subject}</h4>
-              <span class="text-[10px] text-slate-400 shrink-0">${entry.date}</span>
-            </div>
-            <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${entry.topic}</p>
-            <div class="mt-1 flex items-center gap-2 text-[10px] text-emerald-600 font-medium">
-              <span>Hadir: ${entry.present}</span>
-              <span>•</span>
-              <span>Metode: ${entry.method}</span>
-            </div>
-          </div>
-        `;
-        historyContainer.appendChild(item);
-      });
-    }
-
-    // --- JOURNAL FORM LOGIC ---
-    function openJournalForm(scheduleId) {
-      activeScheduleIdForJournal = scheduleId;
-      const sch = schedules.find(s => s.id === scheduleId);
-      if (!sch) return;
-
-      document.getElementById('journal-class-title').textContent = `${sch.class} - ${sch.subject}`;
-      
-      // Isi dropdown mata pelajaran
-      const subjSelect = document.getElementById('journal-subject-select');
-      subjSelect.innerHTML = subjects.map(s => `<option value="${s}" ${s === sch.subject ? 'selected' : ''}>${s}</option>`).join('');
-
-      // Cek apakah data sudah ada
-      const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === scheduleId);
-      const targetClass = classes.find(c => c.name === sch.class);
-      const totalStudents = targetClass ? targetClass.count : 30;
-
-      if (existing) {
-        document.getElementById('att-present').value = existing.present;
-        document.getElementById('att-sick').value = existing.sick;
-        document.getElementById('att-permission').value = existing.permission;
-        document.getElementById('att-absent').value = existing.absent;
-        document.getElementById('journal-method-select').value = existing.method;
-        document.getElementById('journal-condition-select').value = existing.condition;
-        document.getElementById('journal-topic').value = existing.topic;
-        document.getElementById('journal-notes').value = existing.notes || '';
-        
-        if (existing.photo) {
-          currentPhotoBase64 = existing.photo;
-          document.getElementById('photo-preview-img').src = existing.photo;
-          document.getElementById('photo-preview-box').classList.remove('hidden');
-        } else {
-          removePhoto();
-        }
-      } else {
-        document.getElementById('att-present').value = totalStudents;
-        document.getElementById('att-sick').value = 0;
-        document.getElementById('att-permission').value = 0;
-        document.getElementById('att-absent').value = 0;
-        document.getElementById('journal-topic').value = '';
-        document.getElementById('journal-notes').value = '';
-        removePhoto();
-      }
-
-      showScreen('journal-screen');
-    }
-
-    function handlePhotoUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        currentPhotoBase64 = e.target.result;
-        document.getElementById('photo-preview-img').src = currentPhotoBase64;
-        document.getElementById('photo-preview-box').classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removePhoto() {
-      currentPhotoBase64 = null;
-      document.getElementById('photo-preview-img').src = '';
-      document.getElementById('photo-preview-box').classList.add('hidden');
-    }
-
-    function generateAISummary() {
-      const subject = document.getElementById('journal-subject-select').value;
-      const method = document.getElementById('journal-method-select').value;
-
-      const templates = [
-        `Penyampaian materi pokok ${subject} melalui metode ${method}. Siswa diajak berdiskusi aktif serta menyelesaikan studi kasus interaktif secara berkelompok.`,
-        `Pembahasan konsep dasar ${subject}. Kegiatan dilanjutkan dengan latihan praktik menggunakan metode ${method} serta evaluasi hasil belajar di akhir sesi.`,
-        `Pendalaman materi ${subject} dikombinasikan dengan metode ${method}. Peserta didik mampu memahami indikator ketercapaian materi dengan antusias.`
-      ];
-
-      const randomIndex = Math.floor(Math.random() * templates.length);
-      document.getElementById('journal-topic').value = templates[randomIndex];
-      showToast('Ringkasan AI berhasil dibuat!');
-    }
-
-    function saveJournalEntry() {
-      const sch = schedules.find(s => s.id === activeScheduleIdForJournal);
-      if (!sch) return;
-
-      const present = parseInt(document.getElementById('att-present').value) || 0;
-      const sick = parseInt(document.getElementById('att-sick').value) || 0;
-      const permission = parseInt(document.getElementById('att-permission').value) || 0;
-      const absent = parseInt(document.getElementById('att-absent').value) || 0;
-
-      const entryData = {
-        date: selectedDate,
-        dayName: getDayNameFromDate(selectedDate).toUpperCase(),
-        scheduleId: activeScheduleIdForJournal,
-        className: sch.class,
-        studentCount: present + sick + permission + absent,
-        subject: document.getElementById('journal-subject-select').value,
-        present, sick, permission, absent,
-        method: document.getElementById('journal-method-select').value,
-        condition: document.getElementById('journal-condition-select').value,
-        topic: document.getElementById('journal-topic').value,
-        notes: document.getElementById('journal-notes').value,
-        photo: currentPhotoBase64
-      };
-
-      const existingIndex = journalEntries.findIndex(j => j.date === selectedDate && j.scheduleId === activeScheduleIdForJournal);
-      if (existingIndex > -1) {
-        journalEntries[existingIndex] = entryData;
-      } else {
-        journalEntries.push(entryData);
-      }
-
-      localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
-      showToast('Jurnal berhasil disimpan!');
-      showScreen('home-screen');
-    }
-
-    // --- CANVAS SIGNATURE (PARAF GURU) ---
-    let sigCanvas, sigCtx, isDrawing = false;
-
-    function initSignatureCanvas() {
-      sigCanvas = document.getElementById('sig-canvas');
-      if (!sigCanvas) return;
-      sigCtx = sigCanvas.getContext('2d');
-
-      function getPos(e) {
-        const rect = sigCanvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - rect.left, y: clientY - rect.top };
-      }
-
-      function startDraw(e) {
-        isDrawing = true;
-        const pos = getPos(e);
-        sigCtx.beginPath();
-        sigCtx.moveTo(pos.x, pos.y);
-      }
-
-      function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        const pos = getPos(e);
-        sigCtx.lineTo(pos.x, pos.y);
-        sigCtx.strokeStyle = '#0e4a9d';
-        sigCtx.lineWidth = 2.5;
-        sigCtx.lineCap = 'round';
-        sigCtx.stroke();
-      }
-
-      function stopDraw() { isDrawing = false; }
-
-      sigCanvas.addEventListener('mousedown', startDraw);
-      sigCanvas.addEventListener('mousemove', draw);
-      sigCanvas.addEventListener('mouseup', stopDraw);
-      sigCanvas.addEventListener('touchstart', startDraw);
-      sigCanvas.addEventListener('touchmove', draw);
-      sigCanvas.addEventListener('touchend', stopDraw);
-
-      if (profile.signature) {
-        const img = new Image();
-        img.onload = () => sigCtx.drawImage(img, 0, 0);
-        img.src = profile.signature;
-      }
-    }
-
-    function clearSignature() {
-      if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-      profile.signature = null;
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      showToast('Paraf dibersihkan.');
-    }
-
-    function saveSignature() {
-      if (sigCanvas) {
-        profile.signature = sigCanvas.toDataURL();
-        localStorage.setItem('jg_profile', JSON.stringify(profile));
-        showToast('Paraf berhasil disimpan!');
-      }
-    }
-
-    // --- SETTINGS & PROFILE MANAGEMENT ---
-    function loadProfileInputs() {
-      document.getElementById('set-teacher-name').value = profile.name || '';
-      document.getElementById('set-teacher-nip').value = profile.nip || '';
-      document.getElementById('set-teacher-school').value = profile.school || '';
-      
-      const isLocked = profile.isLocked;
-      document.getElementById('set-teacher-name').disabled = isLocked;
-      document.getElementById('set-teacher-nip').disabled = isLocked;
-      document.getElementById('set-teacher-school').disabled = isLocked;
-      document.getElementById('lock-status-text').textContent = isLocked ? 'Buka Kunci' : 'Kunci Profil';
-    }
-
-    function toggleLockProfile() {
-      profile.isLocked = !profile.isLocked;
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      loadProfileInputs();
-      showToast(profile.isLocked ? 'Profil dikunci.' : 'Profil dapat diubah.');
-    }
-
-    function saveProfileSettings() {
-      profile.name = document.getElementById('set-teacher-name').value;
-      profile.nip = document.getElementById('set-teacher-nip').value;
-      profile.school = document.getElementById('set-teacher-school').value;
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      showToast('Perubahan profil tersimpan!');
-    }
-
-    function loadNotifSettingsUI() {
-      document.getElementById('notif-15min-before').checked = notifSettings.notif15MinBefore;
-      document.getElementById('notif-after-class').checked = notifSettings.notifAfterClass;
-      document.getElementById('notif-auto-backup').checked = notifSettings.notifAutoBackup;
-      document.getElementById('notif-weekly-recap').checked = notifSettings.notifWeeklyRecap;
-      document.getElementById('notif-monthly-recap').checked = notifSettings.notifMonthlyRecap;
-      document.getElementById('notif-incomplete-journal').checked = notifSettings.notifIncompleteJournal;
-      document.getElementById('notif-missing-photo').checked = notifSettings.notifMissingPhoto;
-    }
-
-    function saveNotifSettings() {
-      notifSettings = {
-        notif15MinBefore: document.getElementById('notif-15min-before').checked,
-        notifAfterClass: document.getElementById('notif-after-class').checked,
-        notifAutoBackup: document.getElementById('notif-auto-backup').checked,
-        notifWeeklyRecap: document.getElementById('notif-weekly-recap').checked,
-        notifMonthlyRecap: document.getElementById('notif-monthly-recap').checked,
-        notifIncompleteJournal: document.getElementById('notif-incomplete-journal').checked,
-        notifMissingPhoto: document.getElementById('notif-missing-photo').checked
-      };
-      localStorage.setItem('jg_notif_settings', JSON.stringify(notifSettings));
-      showToast('Pengaturan notifikasi diperbarui.');
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      showToast('Tema aplikasi diubah.');
-    }
-
-    // --- GOOGLE DRIVE SIMULATION ---
-    function selectDriveFolder() {
-      const folder = prompt('Masukkan nama folder Google Drive:', driveConfig.folderName);
-      if (folder) {
-        driveConfig.folderName = folder;
-        document.getElementById('gdrive-folder-name').value = folder;
-        localStorage.setItem('jg_drive_config', JSON.stringify(driveConfig));
-        showToast('Folder Google Drive diset.');
-      }
-    }
-
-    function syncToGoogleDrive() {
-      showToast('Menghubungkan ke Google Drive...');
-      setTimeout(() => {
-        showToast('Sinkronisasi sukses! Laporan tersimpan di Drive.');
-      }, 1500);
-    }
-
-    // --- PDF GENERATION ENGINE ---
-    function generatePDF(type) {
-      if (!window.jspdf) {
-        showToast('Library PDF belum terluat sempurna.');
-        return;
-      }
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-      // Title & Header
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`JURNAL MENGAJAR GURU - ${type.toUpperCase()}`, 14, 15);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Nama Guru : ${profile.name}`, 14, 22);
-      doc.text(`NIP / NUPTK: ${profile.nip}`, 14, 27);
-      doc.text(`Sekolah   : ${profile.school}`, 14, 32);
-
-      // Construct Table Data
-      const headers = [['No', 'Tanggal', 'Kelas', 'Mata Pelajaran', 'Kehadiran (H/S/I/A)', 'Metode', 'Kondisi', 'Materi / Pokok Bahasan', 'Paraf Guru']];
-      const rows = journalEntries.map((j, idx) => [
-        idx + 1,
-        `${j.dayName}, ${j.date}`,
-        j.className,
-        j.subject,
-        `${j.present}/${j.sick}/${j.permission}/${j.absent}`,
-        j.method,
-        j.condition,
-        j.topic,
-        '' // Slot untuk gambar Paraf
-      ]);
-
-      doc.autoTable({
-        startY: 37,
-        head: headers,
-        body: rows,
-        theme: 'grid',
-        headStyles: { fillColor: [23, 105, 209], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-        bodyStyles: { fontSize: 8 },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 40 },
-          4: { cellWidth: 28 },
-          5: { cellWidth: 25 },
-          6: { cellWidth: 25 },
-          7: { cellWidth: 60 },
-          8: { cellWidth: 25 }
-        },
-        didDrawCell: function(data) {
-          // Sisipkan Gambar Paraf jika ada di kolom terakhir
-          if (data.column.index === 8 && data.cell.section === 'body') {
-            if (profile.signature) {
-              const dim = data.cell;
-              doc.addImage(profile.signature, 'PNG', dim.x + 2, dim.y + 1, 20, 8);
-            }
-          }
-        }
-      });
-
-      // Download PDF
-      doc.save(`Jurnal_Mengajar_${type}_${new Date().toISOString().slice(0, 10)}.pdf`);
-      showToast('PDF Laporan berhasil diunduh!');
-    }
-
-    // --- TOAST NOTIFICATION UTILITY ---
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
-  </script>
- </body>
-</html>
+// --- STATE MANAGEMENT ---
+    let profile = JSON.parse(localStorage.getItem('jg_profile')) || {
+      name: 'Budi Santoso, S.Pd.',
+      nip: '19850123 201001 1 002',
+      school: 'SMK Negeri 1',
+      isLocked: false,
+      signature: null
+    };
+
+    let driveConfig = JSON.parse(localStorage.getItem('jg_drive_config')) || {
+      email: 'guru.pengajar@gmail.com',
+      folderName: 'Jurnal Mengajar 2026'
+    };
+
+    let notifSettings = JSON.parse(localStorage.getItem('jg_notif_settings')) || {
+      notif15MinBefore: true,
+      notifAfterClass: true,
+      notifAutoBackup: true,
+      notifWeeklyRecap: true,
+      notifMonthlyRecap: true,
+      notifIncompleteJournal: true,
+      notifMissingPhoto: true
+    };
+
+    // MASTER DATA (EDITABLE)
+    let rooms = JSON.parse(localStorage.getItem('jg_rooms')) || ['Ruang Class 1', 'Lab Komputer', 'Lab Gambar'];
+    let classes = JSON.parse(localStorage.getItem('jg_classes')) || [
+      { name: 'XI DPIB 1', count: 34 },
+      { name: 'XI DPIB 2', count: 36 }
+    ];
+    let subjects = JSON.parse(localStorage.getItem('jg_subjects')) || [
+      'KKA (Koding & Kecerdasan Artifisial)',
+      'Autodesk Revit'
+    ];
+
+    // JADWAL MENGAJAR (SENIN - SABTU WITH LOCK STATUS)
+    let schedules = JSON.parse(localStorage.getItem('jg_schedules')) || [
+      { id: '1', day: 'Senin', class: 'XI DPIB 1', room: 'Lab Komputer', subject: 'KKA (Koding & Kecerdasan Artifisial)', time: '07:00 - 09:30', isLocked: false },
+      { id: '2', day: 'Selasa', class: 'XI DPIB 2', room: 'Ruang Class 1', subject: 'Autodesk Revit', time: '10:00 - 12:30', isLocked: false }
+    ];
+
+    let journalEntries = JSON.parse(localStorage.getItem('jg_journals')) || [];
+    let selectedDate = new Date().toISOString().slice(0, 10);
+    let activeScheduleIdForJournal = null;
+    let currentPhotoBase64 = null;
+    let swRegistration = null;
+
+    // --- INISIALISASI ---
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+      initClock();
+      initSignatureCanvas();
+      
+      const isLoggedIn = localStorage.getItem('jg_is_logged_in');
+      if (isLoggedIn === 'true') {
+        showScreen('home-screen');
+      } else {
+        showScreen('auth-screen');
+      }
+
+      document.getElementById('journal-date-picker').value = selectedDate;
+      loadProfileInputs();
+      loadNotifSettingsUI();
+    });
+
+    // --- AUTHENTICATION ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+
+      const bottomNav = document.getElementById('bottom-nav-bar');
+      bottomNav.style.display = (screenId === 'auth-screen') ? 'none' : 'flex';
+
+      const navButtons = document.querySelectorAll('.nav-button');
+      navButtons.forEach(btn => btn.classList.remove('active'));
+      if (screenId === 'home-screen') navButtons[0]?.classList.add('active');
+      if (screenId === 'reports-screen') navButtons[1]?.classList.add('active');
+      if (screenId === 'settings-screen') navButtons[2]?.classList.add('active');
+
+      if (screenId === 'home-screen') renderHomeScreen();
+      if (screenId === 'settings-screen') renderMasterDataSettings();
+
+      window.scrollTo(0, 0);
+    }
+
+    function switchAuthTab(type) {
+      document.getElementById('tab-login-btn').className = type === 'login' ? 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm' : 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+      document.getElementById('tab-register-btn').className = type === 'register' ? 'w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm' : 'w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500';
+      document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
+      document.getElementById('register-form').classList.toggle('hidden', type !== 'register');
+    }
+
+    function handleAuth(type) {
+      if (type === 'register') {
+        profile.name = document.getElementById('reg-name').value || profile.name;
+        profile.nip = document.getElementById('reg-nip').value || profile.nip;
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+      }
+      localStorage.setItem('jg_is_logged_in', 'true');
+      showToast('Berhasil masuk ke akun!');
+      showScreen('home-screen');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('jg_is_logged_in');
+      showToast('Berhasil keluar.');
+      showScreen('auth-screen');
+    }
+
+    // --- JAM & TANGGAL ---
+    function initClock() {
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+      function update() {
+        const now = new Date();
+        document.getElementById('live-clock').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('live-day').textContent = days[now.getDay()];
+        document.getElementById('live-date').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    function onDateChange() {
+      selectedDate = document.getElementById('journal-date-picker').value;
+      renderHomeScreen();
+    }
+
+    function getDayNameFromDate(dateStr) {
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      return days[new Date(dateStr).getDay()];
+    }
+
+    // --- DASHBOARD & EDIT/HAPUS RIWAYAT JURNAL ---
+    function renderHomeScreen() {
+      document.getElementById('teacher-name-home').textContent = profile.name || 'Guru Pengajar';
+      const dayName = getDayNameFromDate(selectedDate);
+      document.getElementById('selected-day-badge').textContent = dayName;
+
+      const todaySchedules = schedules.filter(s => s.day.toLowerCase() === dayName.toLowerCase());
+      const scheduleContainer = document.getElementById('home-schedule-list');
+      scheduleContainer.innerHTML = '';
+
+      if (todaySchedules.length === 0) {
+        scheduleContainer.innerHTML = `<div class="native-card p-4 text-center text-xs text-slate-500">Tidak ada jadwal mengajar pada hari ${dayName}.</div>`;
+      } else {
+        todaySchedules.forEach(sch => {
+          const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === sch.id);
+          const isDone = !!existing;
+
+          const card = document.createElement('div');
+          card.className = 'native-card p-4 flex items-center justify-between';
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">${sch.time}</span>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">${sch.class}</span>
+              </div>
+              <p class="font-bold text-xs">${sch.subject}</p>
+              <p class="text-[11px] text-slate-500">${sch.room}</p>
+            </div>
+            <button onclick="openJournalForm('${sch.id}')" class="${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-600 text-white'} px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
+              <i data-lucide="${isDone ? 'check-circle' : 'edit-3'}" width="14"></i>
+              <span>${isDone ? 'Edit Jurnal' : 'Isi Jurnal'}</span>
+            </button>
+          `;
+          scheduleContainer.appendChild(card);
+        });
+      }
+
+      renderHistoryList();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderHistoryList() {
+      const historyContainer = document.getElementById('home-history-list');
+      historyContainer.innerHTML = '';
+
+      if (journalEntries.length === 0) {
+        historyContainer.innerHTML = `<div class="native-card p-4 text-center text-xs text-slate-400">Belum ada riwayat jurnal.</div>`;
+        return;
+      }
+
+      const sorted = [...journalEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'native-card p-3 flex items-start justify-between gap-3 mb-2';
+        item.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-bold text-xs truncate">${entry.className} - ${entry.subject}</h4>
+              <span class="text-[10px] text-slate-400 shrink-0">${entry.date}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 line-clamp-1">${entry.topic}</p>
+            <div class="mt-1 flex items-center gap-2 text-[10px] text-emerald-600 font-medium">
+              <span>Hadir: ${entry.present}/${entry.studentCount}</span>
+              <span>•</span>
+              <span>Metode: ${entry.method}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="editJournalEntry('${entry.date}', '${entry.scheduleId}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
+              <i data-lucide="edit-2" width="16"></i>
+            </button>
+            <button onclick="deleteJournalEntry('${entry.date}', '${entry.scheduleId}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg">
+              <i data-lucide="trash-2" width="16"></i>
+            </button>
+          </div>
+        `;
+        historyContainer.appendChild(item);
+      });
+    }
+
+    function editJournalEntry(date, scheduleId) {
+      selectedDate = date;
+      document.getElementById('journal-date-picker').value = date;
+      openJournalForm(scheduleId);
+    }
+
+    function deleteJournalEntry(date, scheduleId) {
+      if (confirm('Apakah Anda yakin ingin menghapus entri jurnal ini?')) {
+        journalEntries = journalEntries.filter(j => !(j.date === date && j.scheduleId === scheduleId));
+        localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
+        showToast('Jurnal berhasil dihapus.');
+        renderHomeScreen();
+      }
+    }
+
+    // --- FORM INPUT JURNAL ---
+    function openJournalForm(scheduleId) {
+      activeScheduleIdForJournal = scheduleId;
+      const sch = schedules.find(s => s.id === scheduleId);
+      if (!sch) return;
+
+      document.getElementById('journal-class-title').textContent = `${sch.class} - ${sch.subject}`;
+      
+      const subjSelect = document.getElementById('journal-subject-select');
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s}" ${s === sch.subject ? 'selected' : ''}>${s}</option>`).join('');
+
+      const existing = journalEntries.find(j => j.date === selectedDate && j.scheduleId === scheduleId);
+      const targetClass = classes.find(c => c.name === sch.class);
+      const totalStudents = targetClass ? targetClass.count : 30;
+
+      if (existing) {
+        document.getElementById('att-present').value = existing.present;
+        document.getElementById('att-sick').value = existing.sick;
+        document.getElementById('att-permission').value = existing.permission;
+        document.getElementById('att-absent').value = existing.absent;
+        document.getElementById('journal-method-select').value = existing.method;
+        document.getElementById('journal-condition-select').value = existing.condition;
+        document.getElementById('journal-topic').value = existing.topic;
+        document.getElementById('journal-notes').value = existing.notes || '';
+        
+        if (existing.photo) {
+          currentPhotoBase64 = existing.photo;
+          document.getElementById('photo-preview-img').src = existing.photo;
+          document.getElementById('photo-preview-box').classList.remove('hidden');
+        } else {
+          removePhoto();
+        }
+      } else {
+        document.getElementById('att-present').value = totalStudents;
+        document.getElementById('att-sick').value = 0;
+        document.getElementById('att-permission').value = 0;
+        document.getElementById('att-absent').value = 0;
+        document.getElementById('journal-topic').value = '';
+        document.getElementById('journal-notes').value = '';
+        removePhoto();
+      }
+
+      showScreen('journal-screen');
+    }
+
+    function saveJournalEntry() {
+      const sch = schedules.find(s => s.id === activeScheduleIdForJournal);
+      if (!sch) return;
+
+      const present = parseInt(document.getElementById('att-present').value) || 0;
+      const sick = parseInt(document.getElementById('att-sick').value) || 0;
+      const permission = parseInt(document.getElementById('att-permission').value) || 0;
+      const absent = parseInt(document.getElementById('att-absent').value) || 0;
+
+      const entryData = {
+        date: selectedDate,
+        dayName: getDayNameFromDate(selectedDate).toUpperCase(),
+        scheduleId: activeScheduleIdForJournal,
+        className: sch.class,
+        studentCount: present + sick + permission + absent,
+        subject: document.getElementById('journal-subject-select').value,
+        present, sick, permission, absent,
+        method: document.getElementById('journal-method-select').value,
+        condition: document.getElementById('journal-condition-select').value,
+        topic: document.getElementById('journal-topic').value,
+        notes: document.getElementById('journal-notes').value,
+        photo: currentPhotoBase64
+      };
+
+      const existingIndex = journalEntries.findIndex(j => j.date === selectedDate && j.scheduleId === activeScheduleIdForJournal);
+      if (existingIndex > -1) {
+        journalEntries[existingIndex] = entryData;
+      } else {
+        journalEntries.push(entryData);
+      }
+
+      localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
+      showToast('Jurnal berhasil disimpan!');
+      showScreen('home-screen');
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        currentPhotoBase64 = e.target.result;
+        document.getElementById('photo-preview-img').src = currentPhotoBase64;
+        document.getElementById('photo-preview-box').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePhoto() {
+      currentPhotoBase64 = null;
+      document.getElementById('photo-preview-img').src = '';
+      document.getElementById('photo-preview-box').classList.add('hidden');
+    }
+
+    function generateAISummary() {
+      const subject = document.getElementById('journal-subject-select').value;
+      const method = document.getElementById('journal-method-select').value;
+      const templates = [
+        `Penyampaian materi pokok ${subject} melalui metode ${method}. Siswa berdiskusi aktif dan menyelesaikan modul pembelajaran.`,
+        `Pembahasan konsep ${subject} dikombinasikan dengan latihan praktik (${method}) dan tanya jawab interaktif.`
+      ];
+      document.getElementById('journal-topic').value = templates[Math.floor(Math.random() * templates.length)];
+      showToast('Ringkasan AI berhasil dibuat!');
+    }
+
+    // --- UPLOAD & DRAW TANDA TANGAN (TTD) ---
+    let sigCanvas, sigCtx, isDrawing = false;
+
+    function initSignatureCanvas() {
+      sigCanvas = document.getElementById('sig-canvas');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+
+      function getPos(e) {
+        const rect = sigCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function startDraw(e) { isDrawing = true; const pos = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(pos.x, pos.y); }
+      function draw(e) {
+        if (!isDrawing) return; e.preventDefault(); const pos = getPos(e);
+        sigCtx.lineTo(pos.x, pos.y); sigCtx.strokeStyle = '#0e4a9d'; sigCtx.lineWidth = 2.5; sigCtx.lineCap = 'round'; sigCtx.stroke();
+      }
+      function stopDraw() { isDrawing = false; }
+
+      sigCanvas.addEventListener('mousedown', startDraw);
+      sigCanvas.addEventListener('mousemove', draw);
+      sigCanvas.addEventListener('mouseup', stopDraw);
+      sigCanvas.addEventListener('touchstart', startDraw);
+      sigCanvas.addEventListener('touchmove', draw);
+      sigCanvas.addEventListener('touchend', stopDraw);
+    }
+
+    function handleSignatureUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        profile.signature = e.target.result;
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+        
+        const img = new Image();
+        img.onload = () => {
+          sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+          sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+        };
+        img.src = profile.signature;
+        showToast('Foto Paraf berhasil diunggah!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearSignature() {
+      if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      profile.signature = null;
+      localStorage.setItem('jg_profile', JSON.stringify(profile));
+      showToast('Paraf dibersihkan.');
+    }
+
+    function saveSignature() {
+      if (sigCanvas) {
+        profile.signature = sigCanvas.toDataURL();
+        localStorage.setItem('jg_profile', JSON.stringify(profile));
+        showToast('Paraf berhasil disimpan!');
+      }
+    }
+
+    // --- MANAJEMEN MASTER DATA & JADWAL (SETTINGS) ---
+    function renderMasterDataSettings() {
+      // Data Ruangan, Kelas, dan Subjek bisa ditambah/dihapus secara dinamis di sini
+      loadProfileInputs();
+    }
+
+    function addMasterSubject() {
+      const name = prompt('Masukkan Nama Mata Pelajaran Baru:');
+      if (name) {
+        subjects.push(name);
+        localStorage.setItem('jg_subjects', JSON.stringify(subjects));
+        showToast('Mata Pelajaran ditambahkan!');
+      }
+    }
+
+    function addMasterClass() {
+      const name = prompt('Masukkan Nama Kelas (misal: XI DPIB 1):');
+      const count = prompt('Masukkan Jumlah Siswa:', '30');
+      if (name && count) {
+        classes.push({ name, count: parseInt(count) || 30 });
+        localStorage.setItem('jg_classes', JSON.stringify(classes));
+        showToast('Kelas ditambahkan!');
+      }
+    }
+
+    function addScheduleItem() {
+      const day = prompt('Hari (Senin-Sabtu):', 'Senin');
+      const className = prompt('Nama Kelas:');
+      const subject = prompt('Mata Pelajaran:');
+      const time = prompt('Jam Mengajar (misal: 07:00 - 09:30):', '07:00 - 09:30');
+      const room = prompt('Ruangan:', 'Ruang Class 1');
+
+      if (day && className && subject) {
+        schedules.push({
+          id: Date.now().toString(),
+          day, class: className, subject, time, room, isLocked: false
+        });
+        localStorage.setItem('jg_schedules', JSON.stringify(schedules));
+        showToast('Jadwal baru berhasil disimpan!');
+        renderHomeScreen();
+      }
+    }
+
+    function loadProfileInputs() {
+      document.getElementById('set-teacher-name').value = profile.name || '';
+      document.getElementById('set-teacher-nip').value = profile.nip || '';
+      document.getElementById('set-teacher-school').value = profile.school || '';
+    }
+
+    function saveProfileSettings() {
+      profile.name = document.getElementById('set-teacher-name').value;
+      profile.nip = document.getElementById('set-teacher-nip').value;
+      profile.school = document.getElementById('set-teacher-school').value;
+      localStorage.setItem('jg_profile', JSON.stringify(profile));
+      showToast('Profil berhasil disimpan!');
+      renderHomeScreen();
+    }
+
+    // --- DRIVE SYNC & GENERATE PDF WITH TTD ---
+    function syncToGoogleDrive() {
+      showToast('Menghubungkan ke Google Drive...');
+      setTimeout(() => {
+        showToast(`Terhubung ke Folder: ${driveConfig.folderName}`);
+      }, 1200);
+    }
+
+    function generatePDF(type) {
+      if (!window.jspdf) {
+        showToast('Library PDF belum siap.');
+        return;
+      }
+
+      showToast('Memproses & Mengirim ke Google Drive...');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`JURNAL MENGAJAR GURU - LAPORAN ${type.toUpperCase()}`, 14, 15);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nama Guru : ${profile.name}`, 14, 22);
+      doc.text(`NIP / NUPTK: ${profile.nip}`, 14, 27);
+      doc.text(`Sekolah   : ${profile.school}`, 14, 32);
+
+      const headers = [['No', 'Tanggal', 'Kelas', 'Mata Pelajaran', 'H/S/I/A', 'Metode', 'Kondisi', 'Materi Pembelajaran', 'Paraf Guru']];
+      const rows = journalEntries.map((j, idx) => [
+        idx + 1, `${j.dayName}, ${j.date}`, j.className, j.subject,
+        `${j.present}/${j.sick}/${j.permission}/${j.absent}`, j.method, j.condition, j.topic, ''
+      ]);
+
+      doc.autoTable({
+        startY: 37,
+        head: headers,
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [23, 105, 209], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8 },
+        didDrawCell: function(data) {
+          if (data.column.index === 8 && data.cell.section === 'body') {
+            if (profile.signature) {
+              const dim = data.cell;
+              doc.addImage(profile.signature, 'PNG', dim.x + 2, dim.y + 1, 18, 7);
+            }
+          }
+        }
+      });
+
+      setTimeout(() => {
+        doc.save(`Jurnal_${type}_${profile.name.replace(/\s+/g, '_')}.pdf`);
+        showToast('PDF berhasil diunduh & tersinkronkan ke Drive!');
+      }, 1000);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }

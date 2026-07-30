@@ -1,181 +1,39 @@
-topic: 'Pembahasan silabus dan pembagian tugas proyek.',
-        notes: 'Berjalan lancar',
-        photo: null
-      }
-    ];
+// 1. Perbaikan PDF dengan Compact Header & Styling
+    function generatePDF(type) {
+      showToast(`Membuat laporan PDF ${type}...`);
+      setTimeout(() => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape');
+        
+        doc.setFontSize(12);
+        doc.text(`Laporan Jurnal Mengajar (${type.toUpperCase()})`, 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Guru: ${profile.name} | NIP: ${profile.nip}`, 14, 22);
+        
+        const tableData = journalEntries.map(j => [
+          j.date, 
+          j.dayName, 
+          j.subject, 
+          j.topic, 
+          `${j.present}H / ${j.sick}S / ${j.permission}I / ${j.absent}A`, 
+          j.condition
+        ]);
+        
+        doc.autoTable({
+          startY: 28,
+          head: [['Tanggal', 'Hari', 'Mata Pelajaran', 'Topik Pembahasan', 'Kehadiran', 'Kondisi']],
+          body: tableData,
+          styles: { fontSize: 7.5, cellPadding: 2 },
+          headStyles: { fillColor: [23, 105, 209], textColor: 255, fontStyle: 'bold', halign: 'center' },
+          bodyStyles: { valign: 'middle' },
+        });
 
-    let currentEditingId = null;
-    let currentUser = localStorage.getItem('jg_logged_in') ? JSON.parse(localStorage.getItem('jg_logged_in')) : null;
-
-    // Initialize Lucide icons and app state on load
-    document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-      initApp();
-    });
-
-    function initApp() {
-      if (!currentUser) {
-        showScreen('auth-screen');
-        document.getElementById('bottom-nav-bar').style.display = 'none';
-      } else {
-        showScreen('home-screen');
-        document.getElementById('bottom-nav-bar').style.display = 'flex';
-        updateUI();
-      }
-      
-      // Set date picker default to today
-      const todayStr = new Date().toISOString().split('T')[0];
-      const dp = document.getElementById('journal-date-picker');
-      if (dp && !dp.value) dp.value = todayStr;
-      
-      // Update live clock & date
-      updateLiveClock();
-      setInterval(updateLiveClock, 1000);
+        doc.save(`Jurnal_${profile.name}_${type}.pdf`);
+        showToast("PDF berhasil diunduh!");
+      }, 1000);
     }
 
-    function updateLiveClock() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const clockEl = document.getElementById('live-clock');
-      if (clockEl) clockEl.textContent = `${hours}:${minutes}`;
-
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateEl = document.getElementById('live-date');
-      const dayEl = document.getElementById('live-day');
-      if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', options);
-      if (dayEl) dayEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long' }).toUpperCase();
-    }
-
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(screenId);
-      if (target) target.classList.add('active');
-
-      if (currentUser && screenId !== 'auth-screen') {
-        document.getElementById('bottom-nav-bar').style.display = 'flex';
-      } else {
-        document.getElementById('bottom-nav-bar').style.display = 'none';
-      }
-
-      // Update active nav button
-      document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-      if (screenId === 'home-screen') document.querySelectorAll('.nav-button')[0]?.classList.add('active');
-      if (screenId === 'reports-screen') document.querySelectorAll('.nav-button')[1]?.classList.add('active');
-      if (screenId === 'settings-screen') document.querySelectorAll('.nav-button')[2]?.classList.add('active');
-
-      lucide.createIcons();
-    }
-
-    function switchAuthTab(tab) {
-      const loginBtn = document.getElementById('tab-login-btn');
-      const regBtn = document.getElementById('tab-register-btn');
-      const loginForm = document.getElementById('login-form');
-      const regForm = document.getElementById('register-form');
-
-      if (tab === 'login') {
-        loginBtn.className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm";
-        regBtn.className = "w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500";
-        loginForm.classList.remove('hidden');
-        regForm.classList.add('hidden');
-      } else {
-        regBtn.className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm";
-        loginBtn.className = "w-1/2 py-2 text-xs font-bold rounded-lg text-slate-500";
-        regForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-      }
-    }
-
-    function handleAuth(type) {
-      if (type === 'login') {
-        const userVal = document.getElementById('login-user').value;
-        currentUser = { name: profile.name, nip: userVal };
-      } else {
-        const nameVal = document.getElementById('reg-name').value;
-        const nipVal = document.getElementById('reg-nip').value;
-        profile.name = nameVal;
-        profile.nip = nipVal;
-        localStorage.setItem('jg_profile', JSON.stringify(profile));
-        currentUser = { name: nameVal, nip: nipVal };
-      }
-      localStorage.setItem('jg_logged_in', JSON.stringify(currentUser));
-      showToast("Berhasil masuk ke Jurnal Guru Digital!");
-      showScreen('home-screen');
-      updateUI();
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('jg_logged_in');
-      currentUser = null;
-      showToast("Berhasil keluar akun.");
-      showScreen('auth-screen');
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      if (!t) return;
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => { t.classList.remove('show'); }, 3000);
-    }
-
-    function updateUI() {
-      document.getElementById('teacher-name-home').textContent = profile.name;
-      document.getElementById('set-teacher-name').value = profile.name;
-      document.getElementById('set-teacher-nip').value = profile.nip;
-      document.getElementById('set-teacher-school').value = profile.school;
-
-      renderSchedules();
-      renderHistory();
-      renderMasterLists();
-    }
-
-    function renderSchedules() {
-      const listContainer = document.getElementById('home-schedule-list');
-      if (!listContainer) return;
-      
-      const todayDayName = new Date().toLocaleDateString('id-ID', { weekday: 'long' });
-      document.getElementById('selected-day-badge').textContent = todayDayName;
-
-      const todaySchedules = schedules;
-      if (todaySchedules.length === 0) {
-        listContainer.innerHTML = `<div class="native-card p-4 text-center text-xs text-slate-500">Tidak ada jadwal hari ini.</div>`;
-        return;
-      }
-
-      listContainer.innerHTML = todaySchedules.map(sc => `
-        <div class="native-card p-4 flex items-center justify-between">
-          <div>
-            <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded">${sc.day} • ${sc.time}</span>
-            <h3 class="font-bold text-sm mt-1">${sc.subject}</h3>
-            <p class="text-xs text-slate-500">${sc.class} (${sc.room})</p>
-          </div>
-          <button type="button" class="primary-button w-auto px-4 py-2 text-xs" onclick="openJournalForm('${sc.id}')">Isi Jurnal</button>
-        </div>
-      `).join('');
-    }
-
-    function openJournalForm(scheduleId) {
-      const sc = schedules.find(s => s.id === scheduleId);
-      if (!sc) return;
-
-      currentEditingId = null;
-      document.getElementById('journal-class-title').textContent = `${sc.subject} - ${sc.class}`;
-      
-      const subjSelect = document.getElementById('journal-subject-select');
-      subjSelect.innerHTML = subjects.map(s => `<option value="${s.name}" ${s.name === sc.subject ? 'selected' : ''}>${s.name}</option>`).join('');
-
-      document.getElementById('att-present').value = "30";
-      document.getElementById('att-sick').value = "0";
-      document.getElementById('att-permission').value = "0";
-      document.getElementById('att-absent').value = "0";
-      document.getElementById('journal-topic').value = "";
-      document.getElementById('journal-notes').value = "";
-      removePhoto();
-
-      showScreen('journal-screen');
-    }
-
+    // 2. Auto-Redirect setelah Simpan Jurnal
     function saveJournalEntry() {
       const subject = document.getElementById('journal-subject-select').value;
       const method = document.getElementById('journal-method-select').value;
@@ -209,406 +67,24 @@ topic: 'Pembahasan silabus dan pembagian tugas proyek.',
 
       localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
       showToast("Jurnal berhasil disimpan!");
+      
+      // Auto-Redirect ke Dashboard / Home Screen
       showScreen('home-screen');
       renderHistory();
     }
 
-    function renderHistory() {
-      const container = document.getElementById('home-history-list');
-      if (!container) return;
-
-      if (journalEntries.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500">Belum ada riwayat jurnal yang diisi.</p>`;
-        return;
-      }
-
-      container.innerHTML = journalEntries.map(j => `
-        <div class="native-card p-4 space-y-2 text-xs">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-blue-600">${j.date} (${j.dayName})</span>
-            <div class="flex gap-1">
-              <button type="button" class="icon-button p-1.5" onclick="editJournal('${j.id}')"><i data-lucide="edit-2" width="14"></i></button>
-              <button type="button" class="icon-button p-1.5 text-rose-600" onclick="deleteJournal('${j.id}')"><i data-lucide="trash-2" width="14"></i></button>
-            </div>
-          </div>
-          <h3 class="font-bold">${j.subject}</h3>
-          <p class="text-slate-500"><b>Topik:</b> ${j.topic}</p>
-          <div class="flex gap-2 pt-1 text-[11px] font-semibold">
-            <span class="text-emerald-600">Hadir: ${j.present}</span>
-            <span class="text-amber-600">Sakit: ${j.sick}</span>
-            <span class="text-blue-600">Izin: ${j.permission}</span>
-            <span class="text-rose-600">Alpa: ${j.absent}</span>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function editJournal(id) {
-      const j = journalEntries.find(item => item.id === id);
-      if (!j) return;
-      currentEditingId = id;
-
-      document.getElementById('journal-class-title').textContent = `Edit Jurnal - ${j.subject}`;
-      document.getElementById('journal-subject-select').value = j.subject;
-      document.getElementById('journal-method-select').value = j.method;
-      document.getElementById('journal-condition-select').value = j.condition;
-      document.getElementById('journal-topic').value = j.topic;
-      document.getElementById('journal-notes').value = j.notes || '';
-      document.getElementById('att-present').value = j.present;
-      document.getElementById('att-sick').value = j.sick;
-      document.getElementById('att-permission').value = j.permission;
-      document.getElementById('att-absent').value = j.absent;
-
-      if (j.photo) {
-        window.tempPhotoData = j.photo;
-        document.getElementById('photo-preview-img').src = j.photo;
-        document.getElementById('photo-preview-box').classList.remove('hidden');
-      } else {
-        removePhoto();
-      }
-
-      showScreen('journal-screen');
-    }
-
+    // 3. Penghapusan Data Seketika (Real-time Delete) tanpa Refresh
     function deleteJournal(id) {
       if (!confirm("Hapus catatan jurnal ini?")) return;
+      
+      // Filter array langsung
       journalEntries = journalEntries.filter(j => j.id !== id);
+      
+      // Perbarui LocalStorage
       localStorage.setItem('jg_journals', JSON.stringify(journalEntries));
+      
       showToast("Jurnal berhasil dihapus.");
+      
+      // Render ulang komponen riwayat/tabel seketika
       renderHistory();
     }
-
-    function handlePhotoUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        window.tempPhotoData = evt.target.result;
-        document.getElementById('photo-preview-img').src = window.tempPhotoData;
-        document.getElementById('photo-preview-box').classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removePhoto() {
-      window.tempPhotoData = null;
-      document.getElementById('photo-preview-img').src = "";
-      document.getElementById('photo-preview-box').classList.add('hidden');
-      document.getElementById('photo-file-input').value = "";
-      document.getElementById('photo-camera-input').value = "";
-    }
-
-    function generateAISummary() {
-      const topics = [
-        "Siswa aktif mempraktikkan materi pembelajaran di perangkat masing-masing.",
-        "Diskusi kelompok berjalan interaktif dengan antusiasme siswa yang tinggi.",
-        "Penyampaian materi pokok bahasan tuntas dan dipahami dengan baik oleh siswa."
-      ];
-      const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-      document.getElementById('journal-topic').value = randomTopic;
-      showToast("✨ Rangkum AI berhasil dibuat!");
-    }
-
-    function generatePDF(type) {
-      showToast(`Membuat laporan PDF ${type}...`);
-      setTimeout(() => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape');
-        doc.text(`Laporan Jurnal Mengajar (${type.toUpperCase()})`, 14, 20);
-        doc.text(`Guru: ${profile.name} | NIP: ${profile.nip}`, 14, 28);
-        
-        const tableData = journalEntries.map(j => [j.date, j.dayName, j.subject, j.topic, `${j.present}H / ${j.sick}S / ${j.permission}I / ${j.absent}A`, j.condition]);
-        
-        doc.autoTable({
-          startY: 35,
-          head: [['Tanggal', 'Hari', 'Mata Pelajaran', 'Topik Pembahasan', 'Kehadiran', 'Kondisi']],
-          body: tableData,
-        });
-
-        doc.save(`Jurnal_${profile.name}_${type}.pdf`);
-        showToast("PDF berhasil diunduh!");
-      }, 1000);
-    }
-
-    function selectDriveFolder() {
-      const folderName = prompt("Masukkan nama atau ID Folder Google Drive:", driveConfig.folderName);
-      if (folderName) {
-        driveConfig.folderName = folderName;
-        localStorage.setItem('jg_drive_config', JSON.stringify(driveConfig));
-        document.getElementById('gdrive-folder-name').value = folderName;
-        showToast("Folder Google Drive diperbarui.");
-      }
-    }
-
-    function syncToGoogleDrive() {
-      showToast("Menyinkronkan file ke Google Drive...");
-      setTimeout(() => {
-        showToast("Berhasil tersinkronisasi ke Google Drive!");
-      }, 1500);
-    }
-
-    function toggleLockProfile() {
-      profile.isLocked = !profile.isLocked;
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      updateLockUI();
-      showToast(profile.isLocked ? "Profil dikunci." : "Profil dibuka.");
-    }
-
-    function updateLockUI() {
-      const btnText = document.getElementById('lock-status-text');
-      const isLocked = profile.isLocked;
-      if (btnText) btnText.textContent = isLocked ? "Buka Profil" : "Kunci Profil";
-      ['set-teacher-name', 'set-teacher-nip', 'set-teacher-school'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = isLocked;
-      });
-    }
-
-    function saveProfileSettings() {
-      if (profile.isLocked) {
-        alert("Profil sedang terkunci. Buka kunci terlebih dahulu.");
-        return;
-      }
-      profile.name = document.getElementById('set-teacher-name').value;
-      profile.nip = document.getElementById('set-teacher-nip').value;
-      profile.school = document.getElementById('set-teacher-school').value;
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      showToast("Profil berhasil diperbarui!");
-      updateUI();
-    }
-
-    // Canvas Signature
-    const canvas = document.getElementById('sig-canvas');
-    let ctx = canvas ? canvas.getContext('2d') : null;
-    let drawing = false;
-
-    if (canvas) {
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', draw);
-      canvas.addEventListener('mouseup', stopDraw);
-      canvas.addEventListener('touchstart', startDraw);
-      canvas.addEventListener('touchmove', draw);
-      canvas.addEventListener('touchend', stopDraw);
-    }
-
-    function startDraw(e) {
-      drawing = true;
-      ctx.beginPath();
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX || e.touches[0].clientX) - rect.left;
-      const y = (e.clientY || e.touches[0].clientY) - rect.top;
-      ctx.moveTo(x, y);
-      e.preventDefault();
-    }
-
-    function draw(e) {
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX || e.touches[0].clientX) - rect.left;
-      const y = (e.clientY || e.touches[0].clientY) - rect.top;
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      e.preventDefault();
-    }
-
-    function stopDraw() {
-      drawing = false;
-    }
-
-    function clearSignature() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function saveSignature() {
-      if (!canvas) return;
-      profile.signature = canvas.toDataURL();
-      localStorage.setItem('jg_profile', JSON.stringify(profile));
-      showToast("Paraf/Tandatangan berhasil disimpan.");
-    }
-
-    function uploadSignatureImage(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        profile.signature = evt.target.result;
-        localStorage.setItem('jg_profile', JSON.stringify(profile));
-        showToast("File TTD berhasil diunggah dan disimpan!");
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function renderMasterLists() {
-      const subList = document.getElementById('master-subjects-list');
-      if (subList) {
-        subList.innerHTML = subjects.map(s => `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
-            <span>${s.name}</span>
-            <button type="button" class="text-rose-600 font-bold" onclick="deleteMasterItem('subject', '${s.id}')">Hapus</button>
-          </div>
-        `).join('');
-      }
-
-      const roomList = document.getElementById('master-rooms-list');
-      if (roomList) {
-        roomList.innerHTML = rooms.map(r => `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
-            <span>${r.name}</span>
-            <button type="button" class="text-rose-600 font-bold" onclick="deleteMasterItem('room', '${r.id}')">Hapus</button>
-          </div>
-        `).join('');
-      }
-
-      const classList = document.getElementById('master-classes-list');
-      if (classList) {
-        classList.innerHTML = classes.map(c => `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
-            <span>${c.name} (${c.count} Siswa)</span>
-            <button type="button" class="text-rose-600 font-bold" onclick="deleteMasterItem('class', '${c.id}')">Hapus</button>
-          </div>
-        `).join('');
-      }
-
-      const schedList = document.getElementById('master-schedules-list');
-      if (schedList) {
-        schedList.innerHTML = schedules.map(sc => `
-          <div class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
-            <div>
-              <span class="font-bold text-blue-600">${sc.day} (${sc.time})</span>
-              <p>${sc.subject} - ${sc.class} (${sc.room})</p>
-            </div>
-            <button type="button" class="text-rose-600 font-bold" onclick="deleteMasterItem('schedule', '${sc.id}')">Hapus</button>
-          </div>
-        `).join('');
-      }
-    }
-
-    let activeModalType = null;
-    function openMasterModal(type) {
-      activeModalType = type;
-      const modal = document.getElementById('master-modal');
-      const title = document.getElementById('modal-title');
-      const body = document.getElementById('modal-body');
-      modal.classList.remove('hidden');
-
-      if (type === 'subject') {
-        title.textContent = "Tambah Mata Pelajaran";
-        body.innerHTML = `<label class="block font-bold mb-1">Nama Mata Pelajaran</label><input id="modal-input-1" class="form-control text-xs" type="text" placeholder="Contoh: Pemrograman Web">`;
-      } else if (type === 'room') {
-        title.textContent = "Tambah Ruangan";
-        body.innerHTML = `<label class="block font-bold mb-1">Nama Ruangan</label><input id="modal-input-1" class="form-control text-xs" type="text" placeholder="Contoh: Lab Multimedia">`;
-      } else if (type === 'class') {
-        title.textContent = "Tambah Kelas";
-        body.innerHTML = `
-          <label class="block font-bold mb-1">Nama Kelas</label><input id="modal-input-1" class="form-control text-xs mb-2" type="text" placeholder="Contoh: XII TKJ 1">
-          <label class="block font-bold mb-1">Jumlah Siswa</label><input id="modal-input-2" class="form-control text-xs" type="number" placeholder="36">
-        `;
-      }
-    }
-
-    function openScheduleModal() {
-      activeModalType = 'schedule';
-      const modal = document.getElementById('master-modal');
-      const title = document.getElementById('modal-title');
-      const body = document.getElementById('modal-body');
-      modal.classList.remove('hidden');
-      title.textContent = "Tambah Jadwal Mengajar";
-      body.innerHTML = `
-        <label class="block font-bold mb-1">Hari</label>
-        <select id="m-sched-day" class="form-control text-xs mb-2">
-          <option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option><option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option>
-        </select>
-        <label class="block font-bold mb-1">Mata Pelajaran</label>
-        <select id="m-sched-subj" class="form-control text-xs mb-2">${subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('')}</select>
-        <label class="block font-bold mb-1">Kelas</label>
-        <select id="m-sched-class" class="form-control text-xs mb-2">${classes.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}</select>
-        <label class="block font-bold mb-1">Ruangan</label>
-        <select id="m-sched-room" class="form-control text-xs mb-2">${rooms.map(r=>`<option value="${r.name}">${r.name}</option>`).join('')}</select>
-        <label class="block font-bold mb-1">Jam (Waktu)</label>
-        <input id="m-sched-time" class="form-control text-xs" type="text" value="07:00 - 09:30">
-      `;
-    }
-
-    function closeMasterModal() {
-      document.getElementById('master-modal').classList.add('hidden');
-    }
-
-    function submitMasterModal() {
-      if (activeModalType === 'subject') {
-        const val = document.getElementById('modal-input-1').value;
-        if (val) subjects.push({ id: 's_' + Date.now(), name: val });
-        localStorage.setItem('jg_subjects', JSON.stringify(subjects));
-      } else if (activeModalType === 'room') {
-        const val = document.getElementById('modal-input-1').value;
-        if (val) rooms.push({ id: 'r_' + Date.now(), name: val });
-        localStorage.setItem('jg_rooms', JSON.stringify(rooms));
-      } else if (activeModalType === 'class') {
-        const name = document.getElementById('modal-input-1').value;
-        const count = parseInt(document.getElementById('modal-input-2').value) || 30;
-        if (name) classes.push({ id: 'c_' + Date.now(), name, count });
-        localStorage.setItem('jg_classes', JSON.stringify(classes));
-      } else if (activeModalType === 'schedule') {
-        const day = document.getElementById('m-sched-day').value;
-        const subject = document.getElementById('m-sched-subj').value;
-        const cls = document.getElementById('m-sched-class').value;
-        const room = document.getElementById('m-sched-room').value;
-        const time = document.getElementById('m-sched-time').value;
-        schedules.push({ id: 'sc_' + Date.now(), day, subject, class: cls, room, time, isLocked: false });
-        localStorage.setItem('jg_schedules', JSON.stringify(schedules));
-      }
-      closeMasterModal();
-      updateUI();
-      showToast("Data master berhasil ditambahkan!");
-    }
-
-    function deleteMasterItem(type, id) {
-      if (!confirm("Hapus item ini?")) return;
-      if (type === 'subject') subjects = subjects.filter(s => s.id !== id), localStorage.setItem('jg_subjects', JSON.stringify(subjects));
-      if (type === 'room') rooms = rooms.filter(r => r.id !== id), localStorage.setItem('jg_rooms', JSON.stringify(rooms));
-      if (type === 'class') classes = classes.filter(c => c.id !== id), localStorage.setItem('jg_classes', JSON.stringify(classes));
-      if (type === 'schedule') schedules = schedules.filter(sc => sc.id !== id), localStorage.setItem('jg_schedules', JSON.stringify(schedules));
-      updateUI();
-      showToast("Berhasil dihapus.");
-    }
-
-    function requestNotificationPermission() {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            showToast("Izin notifikasi diberikan!");
-          } else {
-            showToast("Izin notifikasi ditolak.");
-          }
-        });
-      } else {
-        alert("Browser tidak mendukung notifikasi.");
-      }
-    }
-
-    function saveNotifSettings() {
-      notifSettings.notif15MinBefore = document.getElementById('notif-15min-before').checked;
-      notifSettings.notifAfterClass = document.getElementById('notif-after-class').checked;
-      notifSettings.notifAutoBackup = document.getElementById('notif-auto-backup').checked;
-      notifSettings.notifWeeklyRecap = document.getElementById('notif-weekly-recap').checked;
-      notifSettings.notifMonthlyRecap = document.getElementById('notif-monthly-recap').checked;
-      notifSettings.notifIncompleteJournal = document.getElementById('notif-incomplete-journal').checked;
-      notifSettings.notifMissingPhoto = document.getElementById('notif-missing-photo').checked;
-      localStorage.setItem('jg_notif_settings', JSON.stringify(notifSettings));
-      showToast("Pengaturan notifikasi disimpan.");
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('jg_dark_mode', isDark);
-      showToast(isDark ? "Mode gelap diaktifkan." : "Mode terang diaktifkan.");
-    }
-
-    if (localStorage.getItem('jg_dark_mode') === 'true') {
-      document.body.classList.add('dark-mode');
-    }
-  </script>
- </body>
-</html>

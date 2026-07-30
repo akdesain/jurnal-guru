@@ -14,8 +14,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border: #cbd5e1;
-            --success-bg: #dcfce7;
-            --success-text: #166534;
             --radius: 12px;
         }
 
@@ -39,7 +37,6 @@
             max-width: 900px;
         }
 
-        /* Header Guru Friendly */
         header {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -89,7 +86,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Kartu Konten Utama */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -116,15 +112,14 @@
             line-height: 1.5;
         }
 
-        /* Smart Input Box */
         .smart-input-wrapper {
             position: relative;
         }
 
-        .smart-input {
+        .smart-input, .form-control {
             width: 100%;
-            padding: 16px 20px;
-            font-size: 1.05rem;
+            padding: 14px 18px;
+            font-size: 1rem;
             border: 2px solid var(--border);
             border-radius: 10px;
             outline: none;
@@ -132,13 +127,12 @@
             background: #fafaf9;
         }
 
-        .smart-input:focus {
+        .smart-input:focus, .form-control:focus {
             border-color: var(--primary);
             background: #ffffff;
             box-shadow: 0 0 0 4px var(--primary-light);
         }
 
-        /* Quick Pills / Tombol Cepat */
         .quick-pills {
             display: flex;
             flex-wrap: wrap;
@@ -170,7 +164,6 @@
             color: var(--primary);
         }
 
-        /* Preview Chips Realtime */
         .preview-chips {
             display: flex;
             flex-wrap: wrap;
@@ -201,7 +194,6 @@
             border: 1px solid var(--border);
         }
 
-        /* Form Pengaturan */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -221,25 +213,8 @@
             font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 8px;
-            color: var(--text-main);
         }
 
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            background: #fff;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        /* Tombol Aksi */
         .btn-primary {
             background: var(--primary);
             color: #ffffff;
@@ -263,9 +238,28 @@
             margin-top: 20px;
             display: flex;
             justify-content: flex-end;
+            gap: 10px;
         }
 
-        /* List Jadwal Guru */
+        /* Toolbar Filter & Search */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            background: #fff;
+        }
+
+        .toolbar input { flex: 1; min-width: 200px; }
+
         .schedule-list {
             list-style: none;
             display: flex;
@@ -291,8 +285,10 @@
         .schedule-info h4 {
             font-size: 1.05rem;
             font-weight: 600;
-            color: var(--text-main);
             margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .schedule-meta {
@@ -303,27 +299,49 @@
             color: var(--text-muted);
         }
 
-        .btn-delete {
-            background: #fee2e2;
-            color: #dc2626;
-            border: none;
-            padding: 8px 14px;
+        /* Badge Status */
+        .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .badge-upcoming { background: #fef3c7; color: #d97706; }
+        .badge-ongoing { background: #dcfce7; color: #166534; }
+        .badge-past { background: #f1f5f9; color: #64748b; }
+
+        .btn-group-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-ics {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
-            transition: background 0.15s;
         }
+        .btn-ics:hover { background: #dcfce7; }
 
-        .btn-delete:hover {
-            background: #fca5a5;
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
+        .btn-delete:hover { background: #fca5a5; }
 
-        /* Tab Switcher Display Control */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Sandbox Box */
         .sandbox-box {
             background: #0f172a;
             color: #38bdf8;
@@ -336,11 +354,12 @@
             overflow-x: auto;
         }
     </style>
+    <!-- Memuat pustaka Chrono.js untuk NLP Tanggal Tingkat Lanjut -->
+    <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.4.1/min/chrono.min.js"></script>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Header Nyaman untuk Guru -->
     <header>
         <div class="brand">
             <h1>👨‍🏫 SmartSchedule Guru</h1>
@@ -352,28 +371,26 @@
         </div>
     </header>
 
-    <!-- ================= TAB 1: JADWAL UTAMA ================= -->
+    <!-- TAB 1: JADWAL UTAMA -->
     <section id="tab-jadwal" class="tab-content active">
         <div class="card">
             <h2 class="card-title">✨ Tambah Agenda / Mengajar</h2>
             <p class="instruction-text">
-                Ketik langsung apa yang ingin dijadwalkan secara natural. Sistem akan otomatis mendeteksi tanggal dan waktunya.
+                Ketik natural (Contoh: "Rapat Kurikulum hari Senin depan jam 09:00" atau "Ujian Matematika tanggal 15 Agustus").
             </p>
             
             <div class="smart-input-wrapper">
-                <input type="text" id="mainInput" class="smart-input" placeholder="Contoh: 'Rapat guru besok jam 9 pagi' atau 'Mengajar Matematika kelas 10 lusa'..." oninput="handleInput(this.value, 'main')">
+                <input type="text" id="mainInput" class="smart-input" placeholder="Tulis agenda Anda di sini..." oninput="handleInput(this.value, 'main')">
             </div>
 
-            <!-- Bantuan Tombol Cepat (Pills) -->
             <div class="quick-pills">
                 <span class="pill-label">Pintasan cepat:</span>
                 <button class="quick-pill" onclick="appendQuickText('Hari ini ')">📅 Hari Ini</button>
                 <button class="quick-pill" onclick="appendQuickText('Besok ')">📅 Besok</button>
                 <button class="quick-pill" onclick="appendQuickText('jam 07:30 ')">⏰ Jam 07:30</button>
-                <button class="quick-pill" onclick="appendQuickText('jam 10 pagi ')">⏰ Jam 10 Pagi</button>
+                <button class="quick-pill" onclick="appendQuickText('Senin depan ')">📆 Senin Depan</button>
             </div>
             
-            <!-- Realtime Pratinjau Chips -->
             <div id="mainChips" class="preview-chips"></div>
 
             <div class="action-bar">
@@ -385,29 +402,34 @@
 
         <div class="card">
             <h2 class="card-title">📚 Daftar Agenda & Jadwal Guru</h2>
-            <ul id="scheduleList" class="schedule-list">
-                <!-- Dirender dinamis -->
-            </ul>
+            
+            <!-- Toolbar Pencarian & Filter -->
+            <div class="toolbar">
+                <input type="text" id="searchQuery" placeholder="🔍 Cari agenda..." oninput="renderSchedules()">
+                <select id="filterStatus" onchange="renderSchedules()">
+                    <option value="all">Semua Status</option>
+                    <option value="upcoming">Akan Datang</option>
+                    <option value="ongoing">Sedang Berlangsung</option>
+                    <option value="past">Selesai</option>
+                </select>
+            </div>
+
+            <ul id="scheduleList" class="schedule-list"></ul>
         </div>
     </section>
 
-    <!-- ================= TAB 2: PENGATURAN SYSTEM ================= -->
+    <!-- TAB 2: PENGATURAN & SANDBOX -->
     <section id="tab-pengaturan" class="tab-content">
         <div class="card">
             <h2 class="card-title">⚙️ Konfigurasi Standar Jadwal</h2>
-            <p class="instruction-text">
-                Tentukan nilai bawaan (*default*) yang akan digunakan otomatis oleh sistem jika Anda mengetik jadwal singkat tanpa menyertakan jam atau durasi tertentu.
-            </p>
-
             <form id="settingsForm" onsubmit="saveSettings(event)">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="defaultTime">Jam Default (Jika tidak diketik):</label>
                         <input type="time" id="defaultTime" class="form-control" value="07:30">
                     </div>
-
                     <div class="form-group">
-                        <label for="defaultDuration">Durasi Default Pelajaran/Acara:</label>
+                        <label for="defaultDuration">Durasi Default Pelajaran:</label>
                         <select id="defaultDuration" class="form-control">
                             <option value="30">30 Menit</option>
                             <option value="45" selected>45 Menit (1 Jam Pelajaran)</option>
@@ -416,48 +438,25 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="defaultReminder">Pengingat Otomatis (Notifikasi):</label>
-                    <select id="defaultReminder" class="form-control">
-                        <option value="10" selected>10 Menit Sebelum</option>
-                        <option value="30">30 Menit Sebelum</option>
-                        <option value="60">1 Jam Sebelum</option>
-                        <option value="0">Tanpa Pengingat</option>
-                    </select>
-                </div>
-
                 <div class="action-bar">
                     <button type="submit" class="btn-primary">Simpan Pengaturan</button>
                 </div>
             </form>
         </div>
 
-        <!-- LIVE SANDBOX UJI COBA -->
         <div class="card" style="border-color: #38bdf8;">
-            <h2 class="card-title">🧪 Uji Coba Kalimat (Sandbox Setting)</h2>
-            <p class="instruction-text">
-                Uji langsung efektivitas pengaturan di atas dengan mengetik kalimat di bawah ini:
-            </p>
-
+            <h2 class="card-title">🧪 Uji Coba Kalimat (Sandbox NLP Chrono)</h2>
             <div class="smart-input-wrapper">
-                <input type="text" id="sandboxInput" class="smart-input" placeholder="Ketik uji coba: 'Upacara bendera senin depan'..." oninput="handleInput(this.value, 'sandbox')">
+                <input type="text" id="sandboxInput" class="smart-input" placeholder="Uji kalimat lengkap..." oninput="handleInput(this.value, 'sandbox')">
             </div>
-
             <div id="sandboxChips" class="preview-chips"></div>
-            <div id="sandboxJson" class="sandbox-box">// Hasil ekstraksi objek JSON sistem akan tampil di sini...</div>
+            <div id="sandboxJson" class="sandbox-box">// Hasil ekstraksi JSON otomatis...</div>
         </div>
     </section>
 </div>
 
 <script>
-    /* ================= 1. STATE & STORAGE MANAGEMENT ================= */
-    let config = {
-        defaultTime: '07:30',
-        defaultDuration: '45',
-        defaultReminder: '10'
-    };
-
+    let config = { defaultTime: '07:30', defaultDuration: '45' };
     let schedules = [];
 
     function initApp() {
@@ -466,9 +465,7 @@
             config = JSON.parse(savedConfig);
             document.getElementById('defaultTime').value = config.defaultTime;
             document.getElementById('defaultDuration').value = config.defaultDuration;
-            document.getElementById('defaultReminder').value = config.defaultReminder;
         }
-
         const savedSchedules = localStorage.getItem('smart_guru_events');
         if (savedSchedules) {
             schedules = JSON.parse(savedSchedules);
@@ -480,102 +477,74 @@
         e.preventDefault();
         config.defaultTime = document.getElementById('defaultTime').value;
         config.defaultDuration = document.getElementById('defaultDuration').value;
-        config.defaultReminder = document.getElementById('defaultReminder').value;
-
         localStorage.setItem('smart_guru_config', JSON.stringify(config));
-        alert('✨ Pengaturan berhasil disimpan dan disesuaikan!');
-        
-        const sandboxVal = document.getElementById('sandboxInput').value;
-        if (sandboxVal) handleInput(sandboxVal, 'sandbox');
+        alert('✨ Pengaturan berhasil diperbarui!');
     }
 
-    /* ================= 2. PARSER BAHASA ALAMI (NLP) ================= */
+    /* ================= NLP MENGGUNAKAN CHRONO.JS ================= */
     function parseNaturalLanguage(text) {
         if (!text || text.trim() === '') return null;
 
-        let workingText = text.toLowerCase();
+        // Menggunakan chrono.parse untuk mendeteksi tanggal & waktu secara natural
+        const parsedResults = chrono.parse(text, new Date(), { forwardDate: true });
+        
         let eventDate = new Date();
         let isDateDetected = false;
         let isTimeDetected = false;
+        let title = text;
 
-        // Deteksi Hari/Tanggal Sederhana
-        if (workingText.includes('besok lusa') || workingText.includes('lusa')) {
-            eventDate.setDate(eventDate.getDate() + 2);
-            workingText = workingText.replace(/besok lusa|lusa/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('besok')) {
-            eventDate.setDate(eventDate.getDate() + 1);
-            workingText = workingText.replace(/besok/gi, '');
-            isDateDetected = true;
-        } else if (workingText.includes('hari ini')) {
-            workingText = workingText.replace(/hari ini/gi, '');
-            isDateDetected = true;
-        }
-
-        // Deteksi Jam / Waktu
-        let hours = parseInt(config.defaultTime.split(':')[0]);
-        let minutes = parseInt(config.defaultTime.split(':')[1]);
-
-        const timeRegex = /(?:jam|pukul)\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|siang|sore|malam)?/i;
-        const match = workingText.match(timeRegex);
-
-        if (match) {
-            isTimeDetected = true;
-            let h = parseInt(match[1]);
-            let m = match[2] ? parseInt(match[2]) : 0;
-            const period = match[3] ? match[3].toLowerCase() : '';
-
-            if ((period === 'siang' || period === 'sore' || period === 'malam') && h < 12) {
-                h += 12;
-            } else if (period === 'pagi' && h === 12) {
-                h = 0;
+        if (parsedResults.length > 0) {
+            const result = parsedResults[0];
+            title = text.replace(result.text, '').trim();
+            
+            if (result.start) {
+                eventDate = result.start.date();
+                if (result.start.isCertain('day') || result.start.isCertain('month') || result.start.isCertain('weekday')) {
+                    isDateDetected = true;
+                }
+                if (result.start.isCertain('hour')) {
+                    isTimeDetected = true;
+                }
             }
-
-            hours = h;
-            minutes = m;
-            workingText = workingText.replace(match[0], '');
         }
 
-        let title = workingText.replace(/\s+/g, ' ').trim();
+        // Jika waktu tidak terdeteksi oleh teks, ambil dari setting default
+        if (!isTimeDetected) {
+            const [defH, defM] = config.defaultTime.split(':');
+            eventDate.setHours(parseInt(defH), parseInt(defM), 0, 0);
+        }
+
         if (!title) title = "Agenda Mengajar";
         title = title.charAt(0).toUpperCase() + title.slice(1);
 
         const formattedDate = eventDate.toISOString().split('T')[0];
-        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const formattedTime = `${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
 
         return {
-            title: title,
+            title,
             date: formattedDate,
             time: formattedTime,
+            timestamp: eventDate.getTime(),
             duration: config.defaultDuration + ' Menit',
-            reminder: config.defaultReminder == '0' ? 'Tanpa Pengingat' : config.defaultReminder + ' Menit Sebelumnya',
             meta: { isDateDetected, isTimeDetected }
         };
     }
 
-    /* ================= 3. UI RENDERING & HANDLERS ================= */
     function handleInput(text, context) {
         const parsed = parseNaturalLanguage(text);
         const chipsContainer = document.getElementById(context === 'main' ? 'mainChips' : 'sandboxChips');
         
         if (!parsed) {
             chipsContainer.innerHTML = '';
-            if (context === 'sandbox') {
-                document.getElementById('sandboxJson').innerText = '// Objek JSON hasil pembacaan kalimat akan tampil di sini...';
-            }
+            if (context === 'sandbox') document.getElementById('sandboxJson').innerText = '// Hasil kosong';
             return;
         }
 
         chipsContainer.innerHTML = `
             <span class="chip chip-active">📌 ${parsed.title}</span>
-            <span class="chip ${parsed.meta.isDateDetected ? 'chip-active' : 'chip-default'}">
-                📅 ${parsed.date} ${parsed.meta.isDateDetected ? '(Terdeteksi)' : '(Default)'}
-            </span>
-            <span class="chip ${parsed.meta.isTimeDetected ? 'chip-active' : 'chip-default'}">
-                ⏰ ${parsed.time} ${parsed.meta.isTimeDetected ? '(Terdeteksi)' : '(Setting Default)'}
-            </span>
+            <span class="chip ${parsed.meta.isDateDetected ? 'chip-active' : 'chip-default'}">📅 ${parsed.date}</span>
+            <span class="chip ${parsed.meta.isTimeDetected ? 'chip-active' : 'chip-default'}">⏰ ${parsed.time}</span>
             <span class="chip chip-default">⏳ ${parsed.duration}</span>
-            <span class="chip chip-default">🔔 ${parsed.reminder}</span>
         `;
 
         if (context === 'sandbox') {
@@ -595,11 +564,12 @@
         const parsed = parseNaturalLanguage(inputEl.value);
 
         if (!parsed) {
-            alert('Mohon ketik jadwal kegiatan terlebih dahulu.');
+            alert('Mohon ketik agenda terlebih dahulu.');
             return;
         }
 
         schedules.push(parsed);
+        schedules.sort((a, b) => a.timestamp - b.timestamp); // Urutkan berdasarkan waktu
         localStorage.setItem('smart_guru_events', JSON.stringify(schedules));
 
         inputEl.value = '';
@@ -613,27 +583,99 @@
         renderSchedules();
     }
 
+    /* ================= EKSPOR FILE .ICS ================= */
+    function downloadICS(index) {
+        const item = schedules[index];
+        const startDate = new Date(item.timestamp);
+        const durationMinutes = parseInt(item.duration);
+        const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+
+        const formatDateICS = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SmartSchedule Guru//ID
+BEGIN:VEVENT
+SUMMARY:${item.title}
+DTSTART:${formatDateICS(startDate)}
+DTEND:${formatDateICS(endDate)}
+DESCRIPTION:Agenda mengajar / sekolah tercatat via SmartSchedule Guru.
+END:VEVENT
+END:VCALENDAR`;
+
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', `${item.title.replace(/\s+/g, '_')}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    /* ================= RENDER DENGAN FILTER & STATUS BADGE ================= */
     function renderSchedules() {
         const listEl = document.getElementById('scheduleList');
-        if (schedules.length === 0) {
-            listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.95rem; text-align: center; padding: 24px;">Belum ada agenda atau jadwal mengajar yang tercatat.</p>';
+        const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
+        const filterStatus = document.getElementById('filterStatus').value;
+        const now = new Date().getTime();
+
+        const filtered = schedules.filter(item => {
+            const matchesSearch = item.title.toLowerCase().includes(searchQuery) || item.date.includes(searchQuery);
+            
+            const eventTime = item.timestamp;
+            const durationMs = parseInt(item.duration) * 60000;
+            const endTime = eventTime + durationMs;
+
+            let status = 'upcoming';
+            if (now >= eventTime && now <= endTime) {
+                status = 'ongoing';
+            } else if (now > endTime) {
+                status = 'past';
+            }
+
+            const matchesFilter = (filterStatus === 'all' || status === filterStatus);
+            return matchesSearch && matchesFilter;
+        });
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 24px;">Tidak ada agenda yang cocok dengan pencarian.</p>';
             return;
         }
 
-        listEl.innerHTML = schedules.map((item, index) => `
-            <li class="schedule-item">
-                <div class="schedule-info">
-                    <h4>${item.title}</h4>
-                    <div class="schedule-meta">
-                        <span>📅 <strong>${item.date}</strong></span>
-                        <span>⏰ <strong>${item.time} WIB</strong></span>
-                        <span>⏳ ${item.duration}</span>
-                        <span>🔔 ${item.reminder}</span>
+        listEl.innerHTML = filtered.map((item, originalIndex) => {
+            const eventTime = item.timestamp;
+            const durationMs = parseInt(item.duration) * 60000;
+            const endTime = eventTime + durationMs;
+
+            let badgeHTML = '';
+            if (now >= eventTime && now <= endTime) {
+                badgeHTML = '<span class="badge badge-ongoing">Sedang Berlangsung</span>';
+            } else if (now > endTime) {
+                badgeHTML = '<span class="badge badge-past">Selesai</span>';
+            } else {
+                badgeHTML = '<span class="badge badge-upcoming">Akan Datang</span>';
+            }
+
+            // Cari index asli untuk keperluan hapus/ekspor
+            const realIndex = schedules.indexOf(item);
+
+            return `
+                <li class="schedule-item">
+                    <div class="schedule-info">
+                        <h4>${item.title} ${badgeHTML}</h4>
+                        <div class="schedule-meta">
+                            <span>📅 <strong>${item.date}</strong></span>
+                            <span>⏰ <strong>${item.time} WIB</strong></span>
+                            <span>⏳ ${item.duration}</span>
+                        </div>
                     </div>
-                </div>
-                <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
-            </li>
-        `).join('');
+                    <div class="btn-group-actions">
+                        <button class="btn-ics" onclick="downloadICS(${realIndex})" title="Unduh Kalender (.ics)">📅 Unduh ICS</button>
+                        <button class="btn-delete" onclick="deleteSchedule(${realIndex})">Hapus</button>
+                    </div>
+                </li>
+            `;
+        }).join('');
     }
 
     function switchTab(tabName) {

@@ -211,7 +211,9 @@
           <span class="text-[11px] text-slate-500 font-medium">Tercatat Sistem</span>
         </div>
 
-        <div id="home-history-list" class="space-y-3"></div>
+        <div id="home-history-list" class="space-y-3">
+          <!-- Riwayat jurnal dimuat di sini -->
+        </div>
       </div>
     </section>
 
@@ -256,6 +258,7 @@
           <select id="journal-subject-select" class="form-control text-xs" required></select>
         </div>
 
+        <!-- Metode Pembelajaran -->
         <div>
           <label class="block text-xs font-bold mb-1">Metode Pembelajaran</label>
           <select id="journal-method-select" class="form-control text-xs" required>
@@ -266,14 +269,15 @@
           </select>
         </div>
 
+        <!-- Kondisi Kelas -->
         <div>
-          <label class="block text-xs font-bold mb-1">Kondisi Kelas / Pelaksanaan PBM</label>
+          <label class="block text-xs font-bold mb-1">Kondisi Kelas</label>
           <select id="journal-condition-select" class="form-control text-xs" required>
-            <option value="Aman, lancar dan terkendali">Aman, lancar dan terkendali</option>
             <option value="Sangat Baik">Sangat Baik</option>
+            <option value="Aman &amp; Lancar">Aman &amp; Lancar</option>
             <option value="Kondusif">Kondusif</option>
             <option value="Siswa Antusias">Siswa Antusias</option>
-            <option value="Rapat Awal Semester">Rapat Awal Semester</option>
+            <option value="Siswa Aktif">Siswa Aktif</option>
           </select>
         </div>
 
@@ -292,6 +296,7 @@
             </button>
           </div>
 
+          <!-- Preview Foto -->
           <div id="photo-preview-box" class="hidden relative mt-3 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-h-48 flex items-center justify-center">
             <img id="photo-preview-img" src="" class="w-full h-48 object-cover">
             <button type="button" class="absolute top-2 right-2 bg-rose-600 text-white rounded-full p-1 shadow-md hover:bg-rose-700" onclick="removePhoto()">
@@ -300,6 +305,7 @@
           </div>
         </div>
 
+        <!-- Sub Materi / AI Summary -->
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs font-bold">Sub Materi / Pokok Bahasan</label>
@@ -307,11 +313,11 @@
               <i data-lucide="sparkles" width="14" class="text-amber-500"></i> ✨ Rangkum AI
             </button>
           </div>
-          <textarea id="journal-topic" class="form-control text-xs" rows="3" placeholder="Tuliskan sub materi..." required></textarea>
+          <textarea id="journal-topic" class="form-control text-xs" rows="3" placeholder="Tuliskan sub materi atau gunakan tombol Rangkum AI..." required></textarea>
         </div>
 
         <div>
-          <label class="block text-xs font-bold mb-1">Catatan Tambahan</label>
+          <label class="block text-xs font-bold mb-1">Catatan Tambahan / Modul</label>
           <input id="journal-notes" class="form-control text-xs" type="text" placeholder="Opsional...">
         </div>
 
@@ -322,7 +328,7 @@
       </form>
     </section>
 
-    <!-- 4. HALAMAN LAPORAN -->
+    <!-- 4. HALAMAN LAPORAN (GOOGLE DRIVE DIHAPUS) -->
     <section id="reports-screen" class="screen top-safe px-4 pb-5 space-y-4">
       <header class="mb-4">
         <p class="text-xs font-bold tracking-widest text-slate-400">DOKUMEN REKAP</p>
@@ -336,7 +342,7 @@
           </div>
           <div>
             <h3 class="font-bold text-xs">Cetak Laporan Mingguan</h3>
-            <p class="text-[11px] text-slate-500">PDF Landscape sesuai format tabel resmi</p>
+            <p class="text-[11px] text-slate-500">PDF Landscape + TTD & Foto PBM disematkan</p>
           </div>
         </div>
         <button type="button" class="primary-button py-2 text-xs" onclick="generatePDF('weekly')">Unduh PDF Mingguan</button>
@@ -396,7 +402,7 @@
       <!-- PARAF / TTD GURU -->
       <section class="native-card p-4">
         <h2 class="font-bold text-xs mb-1">Paraf Guru / Tanda Tangan (TTD)</h2>
-        <p class="text-[11px] text-slate-500 mb-3">Gambarlah di bawah atau **Upload Gambar TTD** untuk disematkan otomatis ke laporan PDF.</p>
+        <p class="text-[11px] text-slate-500 mb-3">Gambarlah di bawah atau **Upload Gambar TTD** agar terhubung ke PDF.</p>
         
         <div class="border border-slate-300 rounded-xl overflow-hidden bg-white mb-2">
           <canvas id="sig-canvas" width="300" height="120" class="w-full touch-none cursor-crosshair"></canvas>
@@ -440,7 +446,7 @@
         <div id="master-classes-list" class="space-y-2 text-xs"></div>
       </section>
 
-      <!-- KELOLA JADWAL (SENIN - SABTU) DENGAN FITUR KUNCI, EDIT, HAPUS -->
+      <!-- KELOLA JADWAL -->
       <section class="native-card p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div>
@@ -473,6 +479,26 @@
           <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
             <span class="font-medium">📝 Pengingat mengisi jurnal setelah kelas</span>
             <input type="checkbox" id="notif-after-class" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
+          </label>
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
+            <span class="font-medium">💾 Backup otomatis pukul 20.00</span>
+            <input type="checkbox" id="notif-auto-backup" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
+          </label>
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
+            <span class="font-medium">📅 Rekap mingguan setiap hari Jumat</span>
+            <input type="checkbox" id="notif-weekly-recap" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
+          </label>
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
+            <span class="font-medium">📊 Rekap bulanan akhir bulan</span>
+            <input type="checkbox" id="notif-monthly-recap" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
+          </label>
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
+            <span class="font-medium">⚠️ Notifikasi jurnal belum lengkap</span>
+            <input type="checkbox" id="notif-incomplete-journal" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
+          </label>
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
+            <span class="font-medium">📷 Notifikasi foto PBM belum diunggah</span>
+            <input type="checkbox" id="notif-missing-photo" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
           </label>
         </div>
       </section>
@@ -529,21 +555,30 @@
   </div>
 
   <script>
+    // --- STATE MANAGEMENT MULTI-GURU & SISTEM ---
     let registeredUsers = JSON.parse(localStorage.getItem('jg_users')) || [
       { name: 'Budi Santoso, S.Pd.', nip: '198501232010011002', pass: '123456', school: 'SMK Negeri 1', isLocked: false, signature: null }
     ];
 
     let currentUser = JSON.parse(localStorage.getItem('jg_logged_in')) || null;
+
+    // Ambil data profil aktif berdasarkan user yang login
     let profile = currentUser ? (registeredUsers.find(u => u.nip === currentUser.nip) || registeredUsers[0]) : registeredUsers[0];
 
     let notifSettings = JSON.parse(localStorage.getItem('jg_notif_settings')) || {
       notif15MinBefore: true,
-      notifAfterClass: true
+      notifAfterClass: true,
+      notifAutoBackup: true,
+      notifWeeklyRecap: true,
+      notifMonthlyRecap: true,
+      notifIncompleteJournal: true,
+      notifMissingPhoto: true
     };
 
     let rooms = JSON.parse(localStorage.getItem('jg_rooms')) || [
       { id: 'r1', name: 'Ruang Class 1' },
-      { id: 'r2', name: 'Lab Komputer' }
+      { id: 'r2', name: 'Lab Komputer' },
+      { id: 'r3', name: 'Lab Gambar' }
     ];
 
     let classes = JSON.parse(localStorage.getItem('jg_classes')) || [
@@ -562,8 +597,8 @@
     ];
 
     let journalEntries = JSON.parse(localStorage.getItem('jg_journals')) || [];
+
     let currentEditingId = null;
-    let currentEditingScheduleId = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
@@ -640,14 +675,18 @@
       }
     }
 
+    // --- HANDLE LOGIN & REGISTER MULTI-GURU ---
     function handleAuth(type) {
       if (type === 'login') {
         const identifier = document.getElementById('login-user').value.trim();
+        const pass = document.getElementById('login-pass').value;
+
         const found = registeredUsers.find(u => u.nip === identifier || u.name.toLowerCase().includes(identifier.toLowerCase()));
         if (!found) {
           showToast("Akun dengan NIP/Nama tersebut tidak ditemukan.");
           return;
         }
+
         currentUser = { name: found.name, nip: found.nip };
         profile = found;
         localStorage.setItem('jg_logged_in', JSON.stringify(currentUser));
@@ -662,7 +701,15 @@
           return;
         }
 
-        const newUser = { name, nip, pass, school: 'SMK Negeri 1', isLocked: false, signature: null };
+        const newUser = {
+          name,
+          nip,
+          pass,
+          school: 'SMK Negeri 1',
+          isLocked: false,
+          signature: null
+        };
+
         registeredUsers.push(newUser);
         localStorage.setItem('jg_users', JSON.stringify(registeredUsers));
 
@@ -712,15 +759,12 @@
       const todayDayName = new Date().toLocaleDateString('id-ID', { weekday: 'long' });
       document.getElementById('selected-day-badge').textContent = todayDayName;
 
-      // Filter jadwal hari ini
-      const todaysSchedules = schedules.filter(sc => sc.day.toLowerCase() === todayDayName.toLowerCase());
-
-      if (todaysSchedules.length === 0) {
-        listContainer.innerHTML = `<div class="native-card p-4 text-center text-xs text-slate-500">Tidak ada jadwal mengajar untuk hari ${todayDayName}.</div>`;
+      if (schedules.length === 0) {
+        listContainer.innerHTML = `<div class="native-card p-4 text-center text-xs text-slate-500">Tidak ada jadwal hari ini.</div>`;
         return;
       }
 
-      listContainer.innerHTML = todaysSchedules.map(sc => `
+      listContainer.innerHTML = schedules.map(sc => `
         <div class="native-card p-4 flex items-center justify-between">
           <div>
             <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded">${sc.day} • ${sc.time}</span>
@@ -792,10 +836,12 @@
       renderHistory();
     }
 
+    // --- RIWAYAT PENGISIAN JURNAL (HAPUS BERFUNGSI SEMPURNA) ---
     function renderHistory() {
       const container = document.getElementById('home-history-list');
       if (!container) return;
 
+      // Filter riwayat berdasarkan guru yang sedang login agar tercatat sistem secara spesifik
       const userJournals = journalEntries.filter(j => j.teacherNip === profile.nip);
 
       if (userJournals.length === 0) {
@@ -891,102 +937,31 @@
       showToast("✨ Rangkum AI berhasil dibuat!");
     }
 
-    // --- CETAK LAPORAN PDF MENYESUAIKAN FORMAT UPLOAD (MINGGU 1) ---
     function generatePDF(type) {
       showToast(`Membuat laporan PDF ${type}...`);
       setTimeout(() => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('landscape');
-
-        doc.setFontSize(14);
-        doc.text(`MINGGU 1 - LAPORAN JURNAL MENGAJAR (${type.toUpperCase()})`, 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Guru Pengajar: ${profile.name} | NIP: ${profile.nip} | Sekolah: ${profile.school || '-'}`, 14, 22);
-
+        doc.text(`Laporan Jurnal Mengajar (${type.toUpperCase()})`, 14, 20);
+        doc.text(`Guru: ${profile.name} | NIP: ${profile.nip}`, 14, 28);
+        
         const userJournals = journalEntries.filter(j => j.teacherNip === profile.nip);
-
-        // Siapkan baris data untuk autoTable
-        const bodyData = userJournals.map(j => [
-          j.dayName,
-          j.date,
-          j.subject,
-          j.present,
-          j.sick,
-          j.permission,
-          j.absent,
-          j.topic,
-          j.condition,
-          '', // Kolom Paraf Guru (diisi via didDrawCell)
-          ''  // Kolom Foto PBM (diisi via didDrawCell)
-        ]);
-
+        const tableData = userJournals.map(j => [j.date, j.dayName, j.subject, j.topic, `${j.present}H / ${j.sick}S / ${j.permission}I / ${j.absent}A`, j.condition]);
+        
         doc.autoTable({
-          startY: 28,
-          head: [
-            [
-              { content: 'HARI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'TANGGAL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'KELAS / MAPEL', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'JUMLAH SISWA', colSpan: 4, styles: { halign: 'center' } },
-              { content: 'SUB MATERI', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'KET. PELAKSANAAN PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'PARAF GURU', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-              { content: 'FOTO PBM', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } }
-            ],
-            [
-              { content: 'HADIR', styles: { halign: 'center' } },
-              { content: 'SAKIT', styles: { halign: 'center' } },
-              { content: 'IZIN', styles: { halign: 'center' } },
-              { content: 'ALPA', styles: { halign: 'center' } }
-            ]
-          ],
-          body: bodyData,
-          theme: 'grid',
-          headStyles: { fillColor: [23, 105, 209], textColor: 255, fontStyle: 'bold', fontSize: 9 },
-          styles: { fontSize: 8, cellPadding: 4, valign: 'middle' },
-          columnStyles: {
-            0: { cellWidth: 22 },
-            1: { cellWidth: 22 },
-            2: { cellWidth: 38 },
-            3: { cellWidth: 14, halign: 'center' },
-            4: { cellWidth: 14, halign: 'center' },
-            5: { cellWidth: 14, halign: 'center' },
-            6: { cellWidth: 14, halign: 'center' },
-            7: { cellWidth: 45 },
-            8: { cellWidth: 45 },
-            9: { cellWidth: 25, halign: 'center' },
-            10: { cellWidth: 28, halign: 'center' }
-          },
-          didDrawCell: function (data) {
-            // Render Tanda Tangan Guru di kolom ke-9
-            if (data.section === 'body' && data.column.index === 9 && profile.signature) {
-              try {
-                doc.addImage(profile.signature, 'PNG', data.cell.x + 2, data.cell.y + 2, data.cell.width - 4, data.cell.height - 4);
-              } catch (err) {
-                console.error(err);
-              }
-            }
-            // Render Foto PBM di kolom ke-10
-            if (data.section === 'body' && data.column.index === 10) {
-              const journalItem = userJournals[data.row.index];
-              if (journalItem && journalItem.photo) {
-                try {
-                  doc.addImage(journalItem.photo, 'JPEG', data.cell.x + 2, data.cell.y + 2, data.cell.width - 4, data.cell.height - 4);
-                } catch (err) {
-                  console.error(err);
-                }
-              }
-            }
-          }
+          startY: 35,
+          head: [['Tanggal', 'Hari', 'Mata Pelajaran', 'Topik Pembahasan', 'Kehadiran', 'Kondisi']],
+          body: tableData,
         });
 
         doc.save(`Jurnal_${profile.name}_${type}.pdf`);
-        showToast("PDF berhasil diunduh sesuai format!");
+        showToast("PDF berhasil diunduh!");
       }, 1000);
     }
 
     function toggleLockProfile() {
       profile.isLocked = !profile.isLocked;
+      // Perbarui database user
       const idx = registeredUsers.findIndex(u => u.nip === profile.nip);
       if (idx !== -1) registeredUsers[idx] = profile;
       localStorage.setItem('jg_users', JSON.stringify(registeredUsers));
@@ -1076,7 +1051,7 @@
       if (idx !== -1) registeredUsers[idx] = profile;
       localStorage.setItem('jg_users', JSON.stringify(registeredUsers));
 
-      showToast("Paraf/Tandatangan berhasil disimpan ke sistem!");
+      showToast("Paraf/Tandatangan berhasil disimpan.");
     }
 
     function uploadSignatureImage(e) {
@@ -1128,20 +1103,15 @@
       const schedList = document.getElementById('master-schedules-list');
       if (schedList) {
         schedList.innerHTML = schedules.map(sc => `
-          <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+          <div class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
             <div>
-              <span class="font-bold text-blue-600">${sc.day} (${sc.time}) ${sc.isLocked ? '🔒 (Terkunci)' : ''}</span>
+              <span class="font-bold text-blue-600">${sc.day} (${sc.time})</span>
               <p>${sc.subject} - ${sc.class} (${sc.room})</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" class="soft-button px-2 py-1 text-[11px]" onclick="toggleLockSchedule('${sc.id}')">${sc.isLocked ? 'Buka' : 'Kunci'}</button>
-              <button type="button" class="icon-button p-1.5" onclick="editSchedule('${sc.id}')" ${sc.isLocked ? 'disabled class="opacity-50"' : ''}><i data-lucide="edit-2" width="14"></i></button>
-              <button type="button" class="icon-button p-1.5 text-rose-600" onclick="deleteMasterItem('schedule', '${sc.id}')" ${sc.isLocked ? 'disabled class="opacity-50"' : ''}><i data-lucide="trash-2" width="14"></i></button>
-            </div>
+            <button type="button" class="text-rose-600 font-bold" onclick="deleteMasterItem('schedule', '${sc.id}')">Hapus</button>
           </div>
         `).join('');
       }
-      lucide.createIcons();
     }
 
     let activeModalType = null;
@@ -1167,59 +1137,31 @@
       }
     }
 
-    function openScheduleModal(scheduleId = null) {
+    function openScheduleModal() {
       activeModalType = 'schedule';
-      currentEditingScheduleId = scheduleId;
       const modal = document.getElementById('master-modal');
       const title = document.getElementById('modal-title');
       const body = document.getElementById('modal-body');
       modal.classList.remove('hidden');
-
-      let scData = { day: 'Senin', subject: subjects[0]?.name || '', class: classes[0]?.name || '', room: rooms[0]?.name || '', time: '07:00 - 09:30' };
-      if (scheduleId) {
-        const found = schedules.find(s => s.id === scheduleId);
-        if (found) scData = found;
-      }
-
-      title.textContent = scheduleId ? "Edit Jadwal Mengajar" : "Tambah Jadwal Mengajar";
+      title.textContent = "Tambah Jadwal Mengajar";
       body.innerHTML = `
-        <label class="block font-bold mb-1">Hari (Senin - Sabtu)</label>
+        <label class="block font-bold mb-1">Hari</label>
         <select id="m-sched-day" class="form-control text-xs mb-2">
-          ${['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(d => `<option value="${d}" ${scData.day === d ? 'selected' : ''}>${d}</option>`).join('')}
+          <option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option><option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option>
         </select>
         <label class="block font-bold mb-1">Mata Pelajaran</label>
-        <select id="m-sched-subj" class="form-control text-xs mb-2">${subjects.map(s => `<option value="${s.name}" ${scData.subject === s.name ? 'selected' : ''}>${s.name}</option>`).join('')}</select>
+        <select id="m-sched-subj" class="form-control text-xs mb-2">${subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('')}</select>
         <label class="block font-bold mb-1">Kelas</label>
-        <select id="m-sched-class" class="form-control text-xs mb-2">${classes.map(c => `<option value="${c.name}" ${scData.class === c.name ? 'selected' : ''}>${c.name}</option>`).join('')}</select>
+        <select id="m-sched-class" class="form-control text-xs mb-2">${classes.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}</select>
         <label class="block font-bold mb-1">Ruangan</label>
-        <select id="m-sched-room" class="form-control text-xs mb-2">${rooms.map(r => `<option value="${r.name}" ${scData.room === r.name ? 'selected' : ''}>${r.name}</option>`).join('')}</select>
+        <select id="m-sched-room" class="form-control text-xs mb-2">${rooms.map(r=>`<option value="${r.name}">${r.name}</option>`).join('')}</select>
         <label class="block font-bold mb-1">Jam (Waktu)</label>
-        <input id="m-sched-time" class="form-control text-xs" type="text" value="${scData.time}">
+        <input id="m-sched-time" class="form-control text-xs" type="text" value="07:00 - 09:30">
       `;
-    }
-
-    function editSchedule(id) {
-      const sc = schedules.find(s => s.id === id);
-      if (sc && sc.isLocked) {
-        alert("Jadwal ini terkunci. Buka kunci terlebih dahulu untuk mengedit.");
-        return;
-      }
-      openScheduleModal(id);
-    }
-
-    function toggleLockSchedule(id) {
-      const sc = schedules.find(s => s.id === id);
-      if (sc) {
-        sc.isLocked = !sc.isLocked;
-        localStorage.setItem('jg_schedules', JSON.stringify(schedules));
-        updateUI();
-        showToast(sc.isLocked ? "Jadwal dikunci." : "Jadwal dibuka.");
-      }
     }
 
     function closeMasterModal() {
       document.getElementById('master-modal').classList.add('hidden');
-      currentEditingScheduleId = null;
     }
 
     function submitMasterModal() {
@@ -1242,41 +1184,20 @@
         const cls = document.getElementById('m-sched-class').value;
         const room = document.getElementById('m-sched-room').value;
         const time = document.getElementById('m-sched-time').value;
-
-        if (currentEditingScheduleId) {
-          const idx = schedules.findIndex(s => s.id === currentEditingScheduleId);
-          if (idx !== -1) {
-            schedules[idx].day = day;
-            schedules[idx].subject = subject;
-            schedules[idx].class = cls;
-            schedules[idx].room = room;
-            schedules[idx].time = time;
-          }
-        } else {
-          schedules.push({ id: 'sc_' + Date.now(), day, subject, class: cls, room, time, isLocked: false });
-        }
+        schedules.push({ id: 'sc_' + Date.now(), day, subject, class: cls, room, time, isLocked: false });
         localStorage.setItem('jg_schedules', JSON.stringify(schedules));
       }
       closeMasterModal();
       updateUI();
-      showToast("Data berhasil disimpan!");
+      showToast("Data master berhasil ditambahkan!");
     }
 
     function deleteMasterItem(type, id) {
-      if (type === 'schedule') {
-        const sc = schedules.find(s => s.id === id);
-        if (sc && sc.isLocked) {
-          alert("Jadwal ini terkunci dan tidak dapat dihapus.");
-          return;
-        }
-      }
       if (!confirm("Hapus item ini?")) return;
-
       if (type === 'subject') subjects = subjects.filter(s => s.id !== id), localStorage.setItem('jg_subjects', JSON.stringify(subjects));
       if (type === 'room') rooms = rooms.filter(r => r.id !== id), localStorage.setItem('jg_rooms', JSON.stringify(rooms));
       if (type === 'class') classes = classes.filter(c => c.id !== id), localStorage.setItem('jg_classes', JSON.stringify(classes));
       if (type === 'schedule') schedules = schedules.filter(sc => sc.id !== id), localStorage.setItem('jg_schedules', JSON.stringify(schedules));
-      
       updateUI();
       showToast("Berhasil dihapus.");
     }
@@ -1284,11 +1205,27 @@
     function requestNotificationPermission() {
       if ('Notification' in window) {
         Notification.requestPermission().then(permission => {
-          showToast(permission === 'granted' ? "Izin notifikasi peramban aktif!" : "Izin notifikasi ditolak.");
+          if (permission === 'granted') {
+            showToast("Izin notifikasi peramban aktif!");
+          } else {
+            showToast("Izin notifikasi ditolak.");
+          }
         });
       } else {
         alert("Browser tidak mendukung notifikasi.");
       }
+    }
+
+    function saveNotifSettings() {
+      notifSettings.notif15MinBefore = document.getElementById('notif-15min-before').checked;
+      notifSettings.notifAfterClass = document.getElementById('notif-after-class').checked;
+      notifSettings.notifAutoBackup = document.getElementById('notif-auto-backup').checked;
+      notifSettings.notifWeeklyRecap = document.getElementById('notif-weekly-recap').checked;
+      notifSettings.notifMonthlyRecap = document.getElementById('notif-monthly-recap').checked;
+      notifSettings.notifIncompleteJournal = document.getElementById('notif-incomplete-journal').checked;
+      notifSettings.notifMissingPhoto = document.getElementById('notif-missing-photo').checked;
+      localStorage.setItem('jg_notif_settings', JSON.stringify(notifSettings));
+      showToast("Preferensi notifikasi disimpan.");
     }
 
     function toggleDarkMode() {

@@ -89,7 +89,7 @@
     }
     .bottom-nav {
       position: fixed; z-index: 30; bottom: 0; left: 50%;
-      display: none; width: min(100%, 620px); justify-around: space-around;
+      display: none; width: min(100%, 620px); justify-content: space-between; align-items: center;
       transform: translateX(-50%); padding: .5rem .8rem calc(.5rem + env(safe-area-inset-bottom));
       border-top: 1px solid var(--line); background: var(--nav); backdrop-filter: blur(16px);
     }
@@ -253,14 +253,15 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold mb-1">Mata Pelajaran</label>
-          <select id="journal-subject-select" class="form-control text-xs" required></select>
+          <label class="block text-xs font-bold mb-1">Mata Pelajaran <span class="text-slate-400 font-normal">Opsional</span></label>
+          <select id="journal-subject-select" class="form-control text-xs"></select>
         </div>
 
-        <!-- Metode Pembelajaran -->
+        <!-- 1. Metode Pembelajaran -->
         <div>
           <label class="block text-xs font-bold mb-1">Metode Pembelajaran</label>
           <select id="journal-method-select" class="form-control text-xs" required>
+            <option value="" disabled selected>Pilih Metode Pembelajaran</option>
             <option value="Praktik">Praktik</option>
             <option value="Diskusi Kelompok">Diskusi Kelompok</option>
             <option value="Tanya Jawab">Tanya Jawab</option>
@@ -268,10 +269,11 @@
           </select>
         </div>
 
-        <!-- Kondisi Kelas -->
+        <!-- 2. Kondisi Kelas -->
         <div>
           <label class="block text-xs font-bold mb-1">Kondisi Kelas</label>
           <select id="journal-condition-select" class="form-control text-xs" required>
+            <option value="" disabled selected>Pilih Kondisi Kelas</option>
             <option value="Sangat Baik">Sangat Baik</option>
             <option value="Aman &amp; Lancar">Aman &amp; Lancar</option>
             <option value="Kondusif">Kondusif</option>
@@ -315,9 +317,13 @@
           <textarea id="journal-topic" class="form-control text-xs" rows="3" placeholder="Tuliskan sub materi atau gunakan tombol Rangkum AI..." required></textarea>
         </div>
 
+        <!-- 3. Catatan Tambahan -->
         <div>
-          <label class="block text-xs font-bold mb-1">Catatan Tambahan / Modul</label>
-          <input id="journal-notes" class="form-control text-xs" type="text" placeholder="Opsional...">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold">Catatan Tambahan / Modul</label>
+            <span id="char-counter" class="text-[10px] text-slate-400 font-medium">0/150</span>
+          </div>
+          <textarea id="journal-notes" class="form-control text-xs" rows="2" maxlength="150" placeholder="Catatan singkat, bila diperlukan" oninput="updateCharCounter()"></textarea>
         </div>
 
         <button type="submit" class="primary-button flex items-center justify-center gap-2">
@@ -327,7 +333,7 @@
       </form>
     </section>
 
-    <!-- 4. HALAMAN LAPORAN & GOOGLE DRIVE CONNECTOR -->
+    <!-- 4. HALAMAN LAPORAN -->
     <section id="reports-screen" class="screen top-safe px-4 pb-5">
       <header class="mb-4">
         <p class="text-xs font-bold tracking-widest text-slate-400">DOKUMEN REKAP</p>
@@ -360,35 +366,19 @@
         <button type="button" class="primary-button py-2 text-xs bg-indigo-600 hover:bg-indigo-700" onclick="generatePDF('monthly')">Unduh PDF Bulanan</button>
       </div>
 
-      <!-- KONEKSI INTEGRASI GOOGLE DRIVE -->
+      <!-- CARD FOLDER DOWNLOAD -->
       <div class="native-card p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i data-lucide="cloud-upload" width="20" class="text-blue-600"></i>
-            <h3 class="font-bold text-xs">Koneksi Google Drive</h3>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
+            <span class="text-xl">📂</span>
           </div>
-          <span id="gdrive-status-badge" class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Terhubung via Email</span>
-        </div>
-        
-        <p class="text-[11px] text-slate-500">File PDF jurnal yang diunduh otomatis tersimpan ke folder Google Drive akun Anda.</p>
-
-        <div class="space-y-2 border-t pt-3" style="border-color: var(--line);">
           <div>
-            <label class="block text-[11px] font-bold mb-1">Email Akun Google</label>
-            <input id="gdrive-account-email" class="form-control text-xs" type="email" placeholder="guru@gmail.com" value="guru.pengajar@gmail.com">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold mb-1">Folder Google Drive Tujuan</label>
-            <div class="flex gap-2">
-              <input id="gdrive-folder-name" class="form-control text-xs" type="text" placeholder="Nama / ID Folder" value="Jurnal Mengajar 2026">
-              <button type="button" class="soft-button px-3 text-xs shrink-0" onclick="selectDriveFolder()">Pilih Folder</button>
-            </div>
+            <h3 class="font-bold text-xs">Folder Download</h3>
+            <p class="text-[11px] text-slate-500">Buka lokasi penyimpanan PDF jurnal yang telah diunduh.</p>
           </div>
         </div>
-
-        <button type="button" class="soft-button w-full py-2 text-xs text-blue-700 border-blue-200 mt-2" onclick="syncToGoogleDrive()">
-          <i data-lucide="refresh-cw" width="14" class="inline mr-1"></i> Tes Sinkronisasi Simpan File ke Drive
+        <button type="button" class="primary-button py-2.5 text-xs flex items-center justify-center gap-1.5" onclick="openDownloadFolder()">
+          📂 Buka Folder Download
         </button>
       </div>
     </section>
@@ -593,11 +583,6 @@
       school: 'SMK Negeri 1',
       isLocked: false,
       signature: null
-    };
-
-    let driveConfig = JSON.parse(localStorage.getItem('jg_drive_config')) || {
-      email: 'guru.pengajar@gmail.com',
-      folderName: 'Jurnal Mengajar 2026'
     };
 
     let notifSettings = JSON.parse(localStorage.getItem('jg_notif_settings')) || {
@@ -905,6 +890,7 @@
         const card = document.createElement('div');
         card.className = 'native-card p-3 space-y-2';
         const photoSrc = item.photo ? item.photo : 'https://via.placeholder.com/80?text=No+Photo';
+        const displaySubject = item.subject && item.subject.trim() !== '' ? item.subject : '-';
 
         card.innerHTML = `
           <div class="flex gap-3 items-center">
@@ -914,7 +900,7 @@
                 <span class="text-[11px] font-bold text-blue-600">${item.dayName || 'HARI'} (${item.date})</span>
                 <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-1.5 py-0.5 rounded">${item.className}</span>
               </div>
-              <p class="text-xs font-bold truncate mt-0.5">${item.subject}</p>
+              <p class="text-xs font-bold truncate mt-0.5">${displaySubject}</p>
               <p class="text-[11px] text-slate-500 truncate">Sub: ${item.topic}</p>
               <p class="text-[10px] text-slate-400 mt-1">Hadir: ${item.present} | Sakit: ${item.sick} | Izin: ${item.permission} | Alpa: ${item.absent}</p>
             </div>
@@ -978,10 +964,11 @@
         document.getElementById('att-sick').value = 0;
         document.getElementById('att-permission').value = 0;
         document.getElementById('att-absent').value = 0;
-        document.getElementById('journal-method-select').value = 'Praktik';
-        document.getElementById('journal-condition-select').value = 'Sangat Baik';
+        document.getElementById('journal-method-select').value = '';
+        document.getElementById('journal-condition-select').value = '';
         document.getElementById('journal-topic').value = '';
         document.getElementById('journal-notes').value = '';
+        updateCharCounter();
         removePhoto();
       }
 
@@ -990,7 +977,7 @@
 
     function loadSubjectDropdown(selectedSubName) {
       const subSelect = document.getElementById('journal-subject-select');
-      subSelect.innerHTML = '';
+      subSelect.innerHTML = '<option value="">-- Pilih Mata Pelajaran (Opsional) --</option>';
       subjects.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
@@ -1008,10 +995,11 @@
       document.getElementById('att-sick').value = entry.sick;
       document.getElementById('att-permission').value = entry.permission;
       document.getElementById('att-absent').value = entry.absent;
-      document.getElementById('journal-method-select').value = entry.method || 'Praktik';
-      document.getElementById('journal-condition-select').value = entry.condition || 'Sangat Baik';
+      document.getElementById('journal-method-select').value = entry.method || '';
+      document.getElementById('journal-condition-select').value = entry.condition || '';
       document.getElementById('journal-topic').value = entry.topic;
       document.getElementById('journal-notes').value = entry.notes || '';
+      updateCharCounter();
 
       if (entry.photo) {
         currentPhotoBase64 = entry.photo;
@@ -1019,6 +1007,13 @@
       } else {
         removePhoto();
       }
+    }
+
+    function updateCharCounter() {
+      const notesEl = document.getElementById('journal-notes');
+      const counterEl = document.getElementById('char-counter');
+      const length = notesEl.value.length;
+      counterEl.textContent = `${length}/150`;
     }
 
     function handlePhotoUpload(event) {
@@ -1054,7 +1049,10 @@
       const currentTopic = document.getElementById('journal-topic').value.trim();
       const topicText = currentTopic ? currentTopic : 'pembahasan materi harian';
 
-      document.getElementById('journal-topic').value = `${topicText} (${method} - ${condition})`;
+      const methodText = method ? method : 'Metode';
+      const conditionText = condition ? condition : 'Kondisi';
+
+      document.getElementById('journal-topic').value = `${topicText} (${methodText} - ${conditionText})`;
       showToast('✨ Sub materi dirangkum AI!');
     }
 
@@ -1068,6 +1066,7 @@
       const studentCount = classObj ? classObj.count : (parseInt(document.getElementById('att-present').value) || 30);
 
       const entryId = editingJournalId ? editingJournalId : 'j_' + Date.now();
+      const subjectVal = document.getElementById('journal-subject-select').value.trim();
 
       const entry = {
         id: entryId,
@@ -1076,7 +1075,7 @@
         scheduleId: activeScheduleIdForJournal,
         className: sched ? sched.class : (document.getElementById('journal-class-title').textContent.split(' ')[2] || 'Kelas'),
         studentCount: studentCount,
-        subject: document.getElementById('journal-subject-select').value,
+        subject: subjectVal !== "" ? subjectVal : "-",
         present: parseInt(document.getElementById('att-present').value) || 0,
         sick: parseInt(document.getElementById('att-sick').value) || 0,
         permission: parseInt(document.getElementById('att-permission').value) || 0,
@@ -1097,29 +1096,18 @@
       showScreen('home-screen');
     }
 
-    // --- GOOGLE DRIVE CONNECTION ---
-    function selectDriveFolder() {
-      const folder = prompt("Masukkan Nama / ID Folder Google Drive Anda:", driveConfig.folderName);
-      if (folder) {
-        driveConfig.folderName = folder;
-        localStorage.setItem('jg_drive_config', JSON.stringify(driveConfig));
-        document.getElementById('gdrive-folder-name').value = folder;
-        showToast(`Folder diset ke: ${folder}`);
+    // --- FOLDER DOWNLOAD ACCESS API ---
+    async function openDownloadFolder() {
+      try {
+        if ('showDirectoryPicker' in window) {
+          const handle = await window.showDirectoryPicker();
+          showToast('Folder Download berhasil diakses!');
+        } else {
+          showToast('Lokasi penyimpanan default: Download/');
+        }
+      } catch (err) {
+        showToast('Lokasi penyimpanan default: Download/');
       }
-    }
-
-    function syncToGoogleDrive() {
-      const email = document.getElementById('gdrive-account-email').value;
-      const folder = document.getElementById('gdrive-folder-name').value;
-      
-      driveConfig.email = email;
-      driveConfig.folderName = folder;
-      localStorage.setItem('jg_drive_config', JSON.stringify(driveConfig));
-
-      showToast(`Menghubungkan Drive (${email})...`);
-      setTimeout(() => {
-        showToast(`Berhasil terkoneksi ke Folder: "${folder}"`);
-      }, 1000);
     }
 
     // --- PDF GENERATOR WITH embedded SIGNATURE ---
@@ -1131,13 +1119,13 @@
       doc.text(`REKAP JURNAL PELAKSANAAN PBM (${type.toUpperCase()})`, 14, 12);
       doc.setFontSize(9);
       doc.text(`Guru Pengajar: ${profile.name} | NIP: ${profile.nip} | Sekolah: ${profile.school}`, 14, 18);
-      doc.text(`Koneksi Drive: ${driveConfig.email} -> Folder: "${driveConfig.folderName}"`, 14, 23);
 
       const head = [
         [
           { content: 'HARI', rowSpan: 2 },
           { content: 'TANGGAL', rowSpan: 2 },
           { content: 'KELAS', rowSpan: 2 },
+          { content: 'MATA PELAJARAN', rowSpan: 2 },
           { content: 'JML SISWA', rowSpan: 2 },
           { content: 'KEHADIRAN', colSpan: 4 },
           { content: 'SUB MATERI', rowSpan: 2 },
@@ -1153,47 +1141,48 @@
           hari: j.dayName || 'SENIN',
           tanggal: j.date,
           kelas: j.className,
+          subject: j.subject && j.subject.trim() !== "" ? j.subject : "-",
           jumlahSiswa: j.studentCount || (j.present + j.sick + j.permission + j.absent),
           hadir: j.present,
           sakit: j.sick,
           izin: j.permission,
           alpa: j.absent,
           subMateri: j.topic,
-          ketPbm: j.condition || 'Sangat Baik',
+          ketPbm: j.condition || '-',
           parafRaw: profile.signature,
           fotoRaw: j.photo
         };
       });
 
       const tableData = body.map(b => [
-        b.hari, b.tanggal, b.kelas, b.jumlahSiswa,
+        b.hari, b.tanggal, b.kelas, b.subject, b.jumlahSiswa,
         b.hadir, b.sakit, b.izin, b.alpa,
         b.subMateri, b.ketPbm, '', ''  
       ]);
 
       doc.autoTable({
-        startY: 27,
+        startY: 25,
         head: head,
         body: tableData,
         theme: 'grid',
         styles: { fontSize: 8, cellPadding: 2, valign: 'middle', halign: 'center', lineColor: [0, 0, 0], lineWidth: 0.2 },
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.3 },
         columnStyles: {
-          0: { cellWidth: 20 }, 1: { cellWidth: 22 }, 2: { cellWidth: 20 }, 3: { cellWidth: 18 },
-          4: { cellWidth: 12 }, 5: { cellWidth: 12 }, 6: { cellWidth: 12 }, 7: { cellWidth: 12 },
-          8: { cellWidth: 50, halign: 'left' }, 9: { cellWidth: 35, halign: 'left' },
-          10: { cellWidth: 25, minCellHeight: 18 }, 11: { cellWidth: 28, minCellHeight: 18 }
+          0: { cellWidth: 18 }, 1: { cellWidth: 20 }, 2: { cellWidth: 18 }, 3: { cellWidth: 32 }, 4: { cellWidth: 16 },
+          5: { cellWidth: 11 }, 6: { cellWidth: 11 }, 7: { cellWidth: 11 }, 8: { cellWidth: 11 },
+          9: { cellWidth: 45, halign: 'left' }, 10: { cellWidth: 32, halign: 'left' },
+          11: { cellWidth: 22, minCellHeight: 18 }, 12: { cellWidth: 25, minCellHeight: 18 }
         },
         didDrawCell: function(data) {
           if (data.section === 'body') {
             const rowIndex = data.row.index;
             const itemData = body[rowIndex];
 
-            if (data.column.index === 10 && itemData && itemData.parafRaw) {
-              doc.addImage(itemData.parafRaw, 'PNG', data.cell.x + 2, data.cell.y + 2, 21, 12);
+            if (data.column.index === 11 && itemData && itemData.parafRaw) {
+              doc.addImage(itemData.parafRaw, 'PNG', data.cell.x + 2, data.cell.y + 2, 18, 12);
             }
-            if (data.column.index === 11 && itemData && itemData.fotoRaw) {
-              doc.addImage(itemData.fotoRaw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 24, 14);
+            if (data.column.index === 12 && itemData && itemData.fotoRaw) {
+              doc.addImage(itemData.fotoRaw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 21, 14);
             }
           }
         }
@@ -1201,7 +1190,7 @@
 
       const fileName = `Jurnal_Mengajar_${type}_${new Date().toISOString().slice(0,10)}.pdf`;
       doc.save(fileName);
-      showToast(`PDF tersimpan & tersinkronisasi ke Google Drive Folder: "${driveConfig.folderName}"`);
+      showToast('PDF berhasil diunduh ke folder Download!');
     }
 
     // --- PROFIL & TTD / SIGNATURE MANAGEMENT ---

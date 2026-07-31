@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurnal Guru Digital</title>
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF & AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+
+  <!-- AUTH SCREEN (Login & Register) -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+      <div class="text-center mb-8">
+        <div class="bg-blue-600 text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-200">
+          <i class="fa-solid fa-book-open text-xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900" id="auth-title">Jurnal Guru Digital</h1>
+        <p class="text-sm text-slate-500 mt-1" id="auth-subtitle">Masuk untuk mengakses jurnal mengajar Anda</p>
+      </div>
+
+      <!-- Error / Success Notification Banner -->
+      <div id="auth-alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+      <form id="auth-form" class="space-y-4">
+        <!-- Extra fields for Register -->
+        <div id="register-fields" class="hidden space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nama Lengkap & Gelar</label>
+            <input type="text" id="reg-name" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Contoh: Aan Kurniawan, S.Pd.,M.Ars">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">NIP</label>
+            <input type="text" id="reg-nip" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Nomor Induk Pegawai">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nama Sekolah</label>
+            <input type="text" id="reg-school" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Contoh: SMK Negeri 1">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+          <input type="email" id="auth-email" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="email@sekolah.sch.id">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="auth-password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="••••••••">
+        </div>
+
+        <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow-md shadow-blue-200 flex items-center justify-center space-x-2">
+          <span id="auth-btn-text">Masuk</span>
+          <div id="auth-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-slate-500">
+        <span id="auth-toggle-text">Belum punya akun?</span>
+        <button type="button" id="auth-toggle-btn" class="text-blue-600 font-semibold hover:underline ml-1">Daftar sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP SCREEN (Dashboard & Journal Forms) -->
+  <div id="app-screen" class="hidden pb-20">
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center font-bold">
+            <i class="fa-solid fa-book-open text-sm"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-slate-900 text-sm leading-tight">Jurnal Guru Digital</h1>
+            <p class="text-xs text-slate-500" id="user-display-email">-</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-settings-nav" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition" title="Pengaturan & TTD">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          <button id="btn-logout" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Keluar">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6">
+      
+      <!-- Dashboard & Riwayat Beranda -->
+      <div id="dashboard-view" class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+          <h2 class="text-xl font-bold mb-1">Selamat Datang, <span id="lbl-teacher-name">Guru</span>!</h2>
+          <p class="text-blue-100 text-sm mb-4">Kelola jurnal kegiatan belajar mengajar harian Anda dengan mudah dan terintegrasi.</p>
+          <button id="btn-open-journal" class="bg-white text-blue-600 font-semibold px-4 py-2 rounded-xl text-sm shadow hover:bg-blue-50 transition flex items-center space-x-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Isi Jurnal Mengajar Baru</span>
+          </button>
+        </div>
+
+        <!-- Export PDF & Drive Section -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm">Laporan Rekap Jurnal</h3>
+            <p class="text-xs text-slate-500">Unduh PDF dan simpan langsung ke Google Drive Anda.</p>
+          </div>
+          <div class="flex items-center space-x-2 w-full sm:w-auto">
+            <button id="btn-export-pdf" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>Export PDF & Drive</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status / Progress Banner -->
+        <div id="pdf-status-banner" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span id="pdf-status-text">Memproses dokumen...</span>
+          </div>
+        </div>
+
+        <!-- Drive Success Banner -->
+        <div id="drive-success-banner" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-800 flex items-center justify-between">
+          <span>Berhasil mengunggah rekap ke Google Drive!</span>
+          <a id="drive-link-btn" href="#" target="_blank" class="bg-emerald-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition">Buka di Google Drive</a>
+        </div>
+
+        <!-- Riwayat Jurnal Terkini -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <h3 class="font-bold text-slate-800 text-sm mb-4">Riwayat Pengisian Jurnal</h3>
+          <div id="history-list" class="space-y-3">
+            <!-- Data akan dimuat secara realtime -->
+            <p class="text-xs text-slate-400 text-center py-4">Memuat riwayat jurnal...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journal Form Screen (Hidden by default) -->
+      <div id="journal-screen" class="hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b pb-4">
+          <div class="flex items-center space-x-3">
+            <button id="btn-back-dashboard" class="text-slate-500 hover:text-slate-800 transition">
+              <i class="fa-solid fa-arrow-left text-lg"></i>
+            </button>
+            <h2 class="font-bold text-slate-900 text-base" id="form-journal-title">Jurnal Mengajar</h2>
+          </div>
+          <span class="text-xs bg-blue-50 text-blue-600 font-semibold px-3 py-1 rounded-full">Sesi 1</span>
+        </div>
+
+        <form id="journal-form" class="space-y-5">
+          <input type="hidden" id="edit-journal-id">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hari & Tanggal</label>
+              <input type="date" id="j-date" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Kelas</label>
+              <input type="text" id="j-class" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="Contoh: XII TKP 1">
+            </div>
+          </div>
+
+          <!-- Kehadiran Siswa -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Kehadiran Siswa</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl text-center">
+                <span class="text-xs text-emerald-700 font-medium">Hadir</span>
+                <input type="number" id="j-hadir" value="34" class="w-full text-center font-bold text-emerald-800 bg-transparent text-lg focus:outline-none">
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center">
+                <span class="text-xs text-amber-700 font-medium">Sakit</span>
+                <input type="number" id="j-sakit" value="0" class="w-full text-center font-bold text-amber-800 bg-transparent text-lg focus:outline-none">
+              </div>
+              <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl text-center">
+                <span class="text-xs text-blue-700 font-medium">Izin</span>
+                <input type="number" id="j-izin" value="0" class="w-full text-center font-bold text-blue-800 bg-transparent text-lg focus:outline-none">
+              </div>
+              <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl text-center">
+                <span class="text-xs text-rose-700 font-medium">Alpa</span>
+                <input type="number" id="j-alpa" value="0" class="w-full text-center font-bold text-rose-800 bg-transparent text-lg focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Topik / Mata Pelajaran</label>
+            <input type="text" id="j-topic" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="KIdK (Kreatifitas, Inovasi & Kewirausahaan)">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Submateri</label>
+            <input type="text" id="j-submateri" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="Contoh: Membuat denah lantai">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Kondisi Kelas</label>
+            <input type="text" id="j-condition" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="Contoh: Sangat Baik, Kondusif">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Foto PBM (Kegiatan)</label>
+            <input type="file" id="j-photo-file" accept="image/*" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Catatan Tambahan</label>
+            <textarea id="j-notes" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="Catatan singkat, bila diperlukan"></textarea>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow">
+            Simpan Jurnal Mengajar
+          </button>
+        </form>
+      </div>
+
+      <!-- Settings Screen (Hidden by default) -->
+      <div id="settings-screen" class="hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b pb-4">
+          <div class="flex items-center space-x-3">
+            <button id="btn-back-settings" class="text-slate-500 hover:text-slate-800 transition">
+              <i class="fa-solid fa-arrow-left text-lg"></i>
+            </button>
+            <h2 class="font-bold text-slate-900 text-base">Pengaturan Profil & Tanda Tangan</h2>
+          </div>
+        </div>
+
+        <form id="settings-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nama Lengkap & Gelar</label>
+            <input type="text" id="set-name" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">NIP</label>
+            <input type="text" id="set-nip" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nama Sekolah</label>
+            <input type="text" id="set-school" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Upload Gambar Tanda Tangan (PNG Transparan)</label>
+            <input type="file" id="set-sig-file" accept="image/png, image/jpeg" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow">
+            Simpan Pengaturan
+          </button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Main Controller Logic Script -->
+  <script type="module">
+    import { initAuthListener, handleLogin, handleRegister, handleLogout, saveProfileSettings, profile } from "./auth.js";
+    import { initJournalListener, saveJournalEntry, deleteJournalEntry, generatePDFAndUploadToDrive, initGoogleDriveAPI, journalEntries } from "./journal.js";
+
+    // DOM Elements
+    const authScreen = document.getElementById('auth-screen');
+    const appScreen = document.getElementById('app-screen');
+    const authForm = document.getElementById('auth-form');
+    const authTitle = document.getElementById('auth-title');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const authAlert = document.getElementById('auth-alert');
+    const registerFields = document.getElementById('register-fields');
+    const authBtnText = document.getElementById('auth-btn-text');
+    const authSpinner = document.getElementById('auth-spinner');
+    const authToggleText = document.getElementById('auth-toggle-text');
+    const authToggleBtn = document.getElementById('auth-toggle-btn');
+    
+    let isRegisterMode = false;
+
+    // Toggle Login / Register UI
+    authToggleBtn.addEventListener('click', () => {
+      isRegisterMode = !isRegisterMode;
+      if (isRegisterMode) {
+        authTitle.textContent = "Daftar Akun Guru";
+        authSubtitle.textContent = "Buat akun baru untuk mulai mengisi jurnal";
+        authBtnText.textContent = "Daftar";
+        authToggleText.textContent = "Sudah punya akun?";
+        authToggleBtn.textContent = "Masuk";
+        registerFields.classList.remove('hidden');
+      } else {
+        authTitle.textContent = "Jurnal Guru Digital";
+        authSubtitle.textContent = "Masuk untuk mengakses jurnal mengajar Anda";
+        authBtnText.textContent = "Masuk";
+        authToggleText.textContent = "Belum punya akun?";
+        authToggleBtn.textContent = "Daftar sekarang";
+        registerFields.classList.add('hidden');
+      }
+      authAlert.classList.add('hidden');
+    });
+
+    // Handle Auth Submit (Login / Register)
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      authAlert.classList.add('hidden');
+      authBtnText.textContent = isRegisterMode ? "Mendaftarkan..." : "Memproses...";
+      authSpinner.classList.remove('hidden');
+
+      try {
+        if (isRegisterMode) {
+          const additionalData = {
+            name: document.getElementById('reg-name').value,
+            nip: document.getElementById('reg-nip').value,
+            school: document.getElementById('reg-school').value,
+            role: "Guru"
+          };
+          await handleRegister(email, password, additionalData);
+        } else {
+          await handleLogin(email, password);
+        }
+      } catch (err) {
+        authAlert.textContent = err.message;
+        authAlert.className = "mb-4 p-3 rounded-lg text-sm bg-rose-50 text-rose-700 border border-rose-200";
+        authAlert.classList.remove('hidden');
+        authBtnText.textContent = isRegisterMode ? "Daftar" : "Masuk";
+        authSpinner.classList.add('hidden');
+      }
+    });
+
+    // Inisialisasi Auth State Listener
+    initAuthListener(
+      (user) => {
+        // On Login Success
+        authScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        document.getElementById('user-display-email').textContent = user.email;
+        document.getElementById('lbl-teacher-name').textContent = profile.name || "Guru";
+
+        // Inisialisasi Realtime Journal Listener & Google Drive API
+        initJournalListener((entries) => {
+          renderHistory(entries);
+        });
+        initGoogleDriveAPI();
+      },
+      () => {
+        // On Logout
+        appScreen.classList.add('hidden');
+        authScreen.classList.remove('hidden');
+        authBtnText.textContent = "Masuk";
+        authSpinner.classList.add('hidden');
+        authForm.reset();
+      }
+    );
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      handleLogout();
+    });
+
+    // Navigasi Tampilan (Dashboard, Journal Form, Settings)
+    const dashboardView = document.getElementById('dashboard-view');
+    const journalScreen = document.getElementById('journal-screen');
+    const settingsScreen = document.getElementById('settings-screen');
+
+    document.getElementById('btn-open-journal').addEventListener('click', () => {
+      dashboardView.classList.add('hidden');
+      journalScreen.classList.remove('hidden');
+      document.getElementById('journal-form').reset();
+      document.getElementById('edit-journal-id').value = "";
+      document.getElementById('form-journal-title').textContent = "Tambah Jurnal Mengajar";
+      document.getElementById('j-date').value = new Date().toISOString().slice(0, 10);
+    });
+
+    document.getElementById('btn-back-dashboard').addEventListener('click', () => {
+      journalScreen.classList.add('hidden');
+      dashboardView.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-settings-nav').addEventListener('click', () => {
+      dashboardView.classList.add('hidden');
+      settingsScreen.classList.remove('hidden');
+      document.getElementById('set-name').value = profile.name || "";
+      document.getElementById('set-nip').value = profile.nip || "";
+      document.getElementById('set-school').value = profile.school || "";
+    });
+
+    document.getElementById('btn-back-settings').addEventListener('click', () => {
+      settingsScreen.classList.add('hidden');
+      dashboardView.classList.remove('hidden');
+    });
+
+    // Handle Simpan Jurnal
+    document.getElementById('journal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editingId = document.getElementById('edit-journal-id').value;
+      const fileInput = document.getElementById('j-photo-file');
+      const filePhoto = fileInput.files[0] || null;
+
+      const entryData = {
+        date: document.getElementById('j-date').value,
+        className: document.getElementById('j-class').value,
+        present: document.getElementById('j-hadir').value,
+        sick: document.getElementById('j-sakit').value,
+        permission: document.getElementById('j-izin').value,
+        absent: document.getElementById('j-alpa').value,
+        topic: document.getElementById('j-topic').value,
+        submateri: document.getElementById('j-submateri').value,
+        condition: document.getElementById('j-condition').value,
+        notes: document.getElementById('j-notes').value
+      };
+
+      try {
+        await saveJournalEntry(entryData, filePhoto, editingId ? editingId : null);
+        journalScreen.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+      } catch (err) {
+        alert("Gagal menyimpan jurnal: " + err.message);
+      }
+    });
+
+    // Render Riwayat Jurnal Realtime di Beranda
+    function renderHistory(entries) {
+      const container = document.getElementById('history-list');
+      if (!entries || entries.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada riwayat jurnal tersimpan.</p>`;
+        return;
+      }
+
+      container.innerHTML = entries.map(item => `
+        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded">${item.kelas}</span>
+              <span class="text-xs text-slate-500">${item.tanggal}</span>
+            </div>
+            <h4 class="font-semibold text-slate-800 text-sm">${item.mataPelajaran}</h4>
+            <p class="text-xs text-slate-500">Submateri: ${item.subMateri || '-'}</p>
+          </div>
+          <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+            <button onclick="window.editJournal('${item.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-semibold transition">Edit</button>
+            <button onclick="window.removeJournal('${item.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold transition">Hapus</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Global helper untuk Edit & Hapus Jurnal
+    window.editJournal = function(id) {
+      const item = journalEntries.find(j => j.id === id);
+      if (!item) return;
+
+      dashboardView.classList.add('hidden');
+      journalScreen.classList.remove('hidden');
+      document.getElementById('form-journal-title').textContent = "Edit Jurnal Mengajar";
+      document.getElementById('edit-journal-id').value = item.id;
+      document.getElementById('j-date').value = item.tanggal || "";
+      document.getElementById('j-class').value = item.kelas || "";
+      document.getElementById('j-hadir').value = item.kehadiran?.hadir || 0;
+      document.getElementById('j-sakit').value = item.kehadiran?.sakit || 0;
+      document.getElementById('j-izin').value = item.kehadiran?.izin || 0;
+      document.getElementById('j-alpa').value = item.kehadiran?.alpa || 0;
+      document.getElementById('j-topic').value = item.mataPelajaran || "";
+      document.getElementById('j-submateri').value = item.subMateri || "";
+      document.getElementById('j-condition').value = item.kondisi || "";
+      document.getElementById('j-notes').value = item.catatan || "";
+    };
+
+    window.removeJournal = async function(id) {
+      if (confirm("Apakah Anda yakin ingin menghapus jurnal ini?")) {
+        try {
+          await deleteJournalEntry(id);
+        } catch (err) {
+          alert("Gagal menghapus jurnal.");
+        }
+      }
+    };
+
+    // Handle Pengaturan Profil & Tanda Tangan
+    document.getElementById('settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('set-name').value;
+      const nip = document.getElementById('set-nip').value;
+      const school = document.getElementById('set-school').value;
+      const sigFile = document.getElementById('set-sig-file').files[0];
+
+      let signatureBase64 = profile.signature || "";
+      if (sigFile) {
+        signatureBase64 = await toBase64(sigFile);
+      }
+
+      try {
+        await saveProfileSettings({ name, nip, school, signature: signatureBase64 });
+        document.getElementById('lbl-teacher-name').textContent = name;
+        settingsScreen.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+        alert("Pengaturan berhasil disimpan!");
+      } catch (err) {
+        alert("Gagal menyimpan pengaturan profil.");
+      }
+    });
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // Export PDF & Upload Google Drive Button Handler
+    document.getElementById('btn-export-pdf').addEventListener('click', () => {
+      const statusBanner = document.getElementById('pdf-status-banner');
+      const statusText = document.getElementById('pdf-status-text');
+      const successBanner = document.getElementById('drive-success-banner');
+      
+      statusBanner.classList.remove('hidden');
+      successBanner.classList.add('hidden');
+
+      generatePDFAndUploadToDrive(
+        'weekly',
+        (msg) => {
+          statusText.textContent = msg;
+        },
+        (driveLink) => {
+          statusBanner.classList.add('hidden');
+          successBanner.classList.remove('hidden');
+          document.getElementById('drive-link-btn').href = driveLink;
+        },
+        (errMsg) => {
+          statusBanner.classList.add('hidden');
+          alert("Terjadi kesalahan: " + errMsg);
+        }
+      );
+    });
+  </script>
+</body>
+</html>

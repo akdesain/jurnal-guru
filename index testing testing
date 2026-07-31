@@ -502,19 +502,7 @@
             <input type="checkbox" id="notif-after-class" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
           </label>
           <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
-            <span class="font-medium">💾 Backup otomatis pukul 20.00</span>
-            <input type="checkbox" id="notif-auto-backup" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
-          </label>
-          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
-            <span class="font-medium">📅 Rekap mingguan setiap hari Jumat</span>
-            <input type="checkbox" id="notif-weekly-recap" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
-          </label>
-          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
-            <span class="font-medium">📊 Rekap bulanan pada akhir bulan</span>
-            <input type="checkbox" id="notif-monthly-recap" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
-          </label>
-          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
-            <span class="font-medium">⚠️ Notifikasi jika jurnal belum lengkap</span>
+            <span class="font-medium">⚠️ Notifikasi jika jurnal hari ini belum lengkap</span>
             <input type="checkbox" id="notif-incomplete-journal" class="w-4 h-4 text-blue-600 rounded" onchange="saveNotifSettings()">
           </label>
           <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 cursor-pointer">
@@ -588,9 +576,6 @@
     let notifSettings = JSON.parse(localStorage.getItem('jg_notif_settings')) || {
       notif15MinBefore: true,
       notifAfterClass: true,
-      notifAutoBackup: true,
-      notifWeeklyRecap: true,
-      notifMonthlyRecap: true,
       notifIncompleteJournal: true,
       notifMissingPhoto: true
     };
@@ -662,6 +647,9 @@
       loadNotifSettingsUI();
       renderMasterLists();
 
+      // Otomatis minta izin dan aktifkan notifikasi saat pertama kali dimuat
+      autoEnableNotifications();
+
       setInterval(checkNotificationTriggers, 30000);
     });
 
@@ -687,6 +675,16 @@
         navigator.serviceWorker.register(URL.createObjectURL(blob))
           .then(reg => { swRegistration = reg; })
           .catch(err => console.log('SW Fail:', err));
+      }
+    }
+
+    function autoEnableNotifications() {
+      if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            showToast('Notifikasi otomatis diaktifkan!');
+          }
+        });
       }
     }
 
@@ -728,16 +726,6 @@
         }
       });
 
-      if (notifSettings.notifAutoBackup && currentHHMM === '20:00') {
-        sendPushNotification('💾 Backup Otomatis', 'Data jurnal harian berhasil dicadangkan.', `backup_${todayISO}`);
-      }
-      if (notifSettings.notifWeeklyRecap && currentDayName === 'Jumat' && currentHHMM === '16:00') {
-        sendPushNotification('📅 Rekap Mingguan Hari Jumat', 'Silakan unduh rekap PDF jurnal minggu ini.', `weekly_${todayISO}`);
-      }
-      if (notifSettings.notifMonthlyRecap && currentHHMM === '17:00') {
-        const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
-        if (tomorrow.getDate() === 1) sendPushNotification('📊 Rekap Bulanan', 'Hari ini akhir bulan. Cetak rekap bulanan Anda.', `monthly_${todayISO}`);
-      }
       if (notifSettings.notifIncompleteJournal && currentHHMM === '15:00') {
         const inc = todaySchedules.filter(s => !journalEntries.some(j => j.date === todayISO && j.scheduleId === s.id)).length;
         if (inc > 0) sendPushNotification('⚠️ Jurnal Belum Lengkap', `Ada ${inc} kelas hari ini yang belum diisi.`, `inc_${todayISO}`);
@@ -1542,9 +1530,6 @@
     function loadNotifSettingsUI() {
       document.getElementById('notif-15min-before').checked = notifSettings.notif15MinBefore;
       document.getElementById('notif-after-class').checked = notifSettings.notifAfterClass;
-      document.getElementById('notif-auto-backup').checked = notifSettings.notifAutoBackup;
-      document.getElementById('notif-weekly-recap').checked = notifSettings.notifWeeklyRecap;
-      document.getElementById('notif-monthly-recap').checked = notifSettings.notifMonthlyRecap;
       document.getElementById('notif-incomplete-journal').checked = notifSettings.notifIncompleteJournal;
       document.getElementById('notif-missing-photo').checked = notifSettings.notifMissingPhoto;
     }
@@ -1552,9 +1537,6 @@
     function saveNotifSettings() {
       notifSettings.notif15MinBefore = document.getElementById('notif-15min-before').checked;
       notifSettings.notifAfterClass = document.getElementById('notif-after-class').checked;
-      notifSettings.notifAutoBackup = document.getElementById('notif-auto-backup').checked;
-      notifSettings.notifWeeklyRecap = document.getElementById('notif-weekly-recap').checked;
-      notifSettings.notifMonthlyRecap = document.getElementById('notif-monthly-recap').checked;
       notifSettings.notifIncompleteJournal = document.getElementById('notif-incomplete-journal').checked;
       notifSettings.notifMissingPhoto = document.getElementById('notif-missing-photo').checked;
 
